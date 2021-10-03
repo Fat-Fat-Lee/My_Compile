@@ -1,0 +1,7 @@
+[jobs.lexer]
+
+image = { source = "dockerfile", path = ".", tag = "lexer-example" }
+
+run = [
+  "java -classpath ./out Compiler $input",
+]
