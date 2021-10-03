@@ -78,9 +78,11 @@ public class Lexer {
 
 
     //跳过空格、换行和tab,指针直接到达非空白字符位置
-    public void isSpace(char[] fileChar){
+    public void isSpace(char[] fileChar,int fileLength){
         while(Character.isWhitespace(fileChar[this.ptr]))
         {this.ptr++;}
+        if(this.ptr>=fileLength)
+            System.exit(0);
     }
 
     //清空token字符串
@@ -127,9 +129,9 @@ public class Lexer {
     }
 
     //词法处理，一次处理一个单词
-    public String getSym(char[] fileChar){
+    public String getSym(char[] fileChar,int fileLength){
         this.clearToken();
-        this.isSpace(fileChar);
+        this.isSpace(fileChar,fileLength);
         if(Character.isLetter(fileChar[this.ptr])||fileChar[this.ptr]=='_')
         {
             while(Character.isLetter(fileChar[this.ptr])
@@ -243,7 +245,7 @@ public class Lexer {
 //        System.out.println(this.ptr);
         while(this.ptr<fileLength)
         {
-            String res=this.getSym(fileChar);
+            String res=this.getSym(fileChar,fileLength);
             if(res.equals("Space"))
                 continue;
             else if(res.equals("Err"))
