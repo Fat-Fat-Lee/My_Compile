@@ -1,11 +1,12 @@
 import Lexer.Lexer;
 
 import java.io.*;
+import java.util.Scanner;
 
 public class Compiler {
     public static void main(String[] args) {
         //后面要把fileName改为args[0]
-        String fileName=args[4];
+        String fileName=args[0];
         File testFile=new File(fileName);
         long fileLength=testFile.length();
         char fileChar[]=new char[(int)(fileLength+100)];
@@ -21,6 +22,7 @@ public class Compiler {
             e.printStackTrace();
         }
 //        System.out.println(fileLength);
+
         Lexer lexer=new Lexer();
         lexer.lexerMain(fileChar,(int)fileLength);
 
