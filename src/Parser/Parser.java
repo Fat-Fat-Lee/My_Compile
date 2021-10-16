@@ -32,10 +32,10 @@ public class Parser {
                     blockParser(resLexerList);
                 }
                 else
-                    System.exit(0);
+                    System.exit(2);
             }
             else
-                System.exit(0);
+                System.exit(2);
         }
       //  System.out.println("funcDef");
     }
@@ -51,10 +51,10 @@ public class Parser {
                 System.out.println("block");
             }
             else
-                System.exit(0);
+                System.exit(2);
         }
         else
-            System.exit(0);
+            System.exit(2);
     }
     public void funcTypeParser(List<String> resLexerList){
       //  System.out.println("IN functype");
@@ -64,7 +64,7 @@ public class Parser {
           //  System.out.println("funcType");
         }
         else
-            System.exit(0);
+            System.exit(2);
     }
     public void stmtParser(List<String> resLexerList){
       //  System.out.println("IN stmt");
@@ -81,13 +81,13 @@ public class Parser {
                   //  System.out.println("stmt");
                 }
                 else
-                    System.exit(0);
+                    System.exit(2);
             }
             else
-                System.exit(0);
+                System.exit(2);
         }
         else
-            System.exit(0);
+            System.exit(2);
 
     }
     public void getSym(List<String> resLexerList){

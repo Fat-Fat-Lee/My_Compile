@@ -22,6 +22,7 @@ public class Comment {
                     i+=2;
                     for(;(tmpFileChar[i]!='*'||tmpFileChar[i+1]!='/')&&i<tmpFileLength;i++);
                     i++;
+                    fileChar[j++]=' ';
                 }
                 else
                     fileChar[j++]=tmpFileChar[i];
