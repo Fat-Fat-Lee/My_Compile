@@ -23,6 +23,8 @@ public class Comment {
                     for(;(tmpFileChar[i]!='*'||tmpFileChar[i+1]!='/')&&i<tmpFileLength;i++);
                     i++;
                     fileChar[j++]=' ';
+                    if(i>=tmpFileLength&&(tmpFileChar[i]!='*'||tmpFileChar[i+1]!='/'))
+                        System.exit(3);
                 }
                 else
                     fileChar[j++]=tmpFileChar[i];
