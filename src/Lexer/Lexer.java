@@ -7,46 +7,21 @@ public class Lexer {
     public String tmpTokenString;
     public int tmpTokenNum;
     public int ptr=0;//指向字符数组的指针
+    public boolean ifContinue=true;
     public List<ReserveWord> reserveWordList=new ArrayList<>();//保留字表
     public List<IdentWord> identWordList=new ArrayList<>();//标识符表
-    public enum symbol{
-        Ident,//标识符
-        Number,//无符号整数
-
-        //保留字
-        If,
-        Else,
-        While,
-        Break,
-        Continue,
-        Return,
-
-        //分界符
-        Assign,//=
-        Semicolon,//;
-        LPar,//(
-        RPar,//)
-        LBrace,//{
-        RBrace,//}
-        Plus,//+
-        Mult,//*
-        Div,// /除号
-        Lt,//<
-        Gt,//>
-        Eq,//==
-        Err//错误
-    }
     //构造函数,把保留字表生成
     public Lexer() {
 
     }
     //lexer初始化
     public void lexerInit(){
-        this.reserveWordList.add(new ReserveWord("if","If"));
-        this.reserveWordList.add(new ReserveWord("else","Else"));
-        this.reserveWordList.add(new ReserveWord("while","While"));
-        this.reserveWordList.add(new ReserveWord("break","Break"));
-        this.reserveWordList.add(new ReserveWord("continue","Continue"));
+        this.reserveWordList.add(new ReserveWord("int","Int"));
+//        this.reserveWordList.add(new ReserveWord("if","If"));
+//        this.reserveWordList.add(new ReserveWord("else","Else"));
+//        this.reserveWordList.add(new ReserveWord("while","While"));
+//        this.reserveWordList.add(new ReserveWord("break","Break"));
+//        this.reserveWordList.add(new ReserveWord("continue","Continue"));
         this.reserveWordList.add(new ReserveWord("return","Return"));
     }
 
@@ -82,7 +57,7 @@ public class Lexer {
         while(Character.isWhitespace(fileChar[this.ptr]))
         {this.ptr++;}
         if(this.ptr>=fileLength)
-            System.exit(0);
+           ifContinue=false;
     }
 
     //清空token字符串
@@ -132,33 +107,68 @@ public class Lexer {
     public String getSym(char[] fileChar,int fileLength){
         this.clearToken();
         this.isSpace(fileChar,fileLength);
-        if(Character.isLetter(fileChar[this.ptr])||fileChar[this.ptr]=='_')
+        if(!ifContinue)
+            return "END";
+        if(Character.isLetter(fileChar[this.ptr]))
         {
-            while(Character.isLetter(fileChar[this.ptr])
-                    ||Character.isDigit(fileChar[this.ptr])
-                    ||fileChar[this.ptr]=='_')
+            while(Character.isLetter(fileChar[this.ptr]))
             {
                 //当前字符若是字母就贴到token后面，然后指针后移
                 this.catToken(fileChar);
                 this.getChar(fileChar);
             }
-            this.retract();
+            retract();
             //若是保留字，返回保留字symbol
             ReserveWord tmpReserveWord=this.reserver(this.tmpTokenString);
             if(tmpReserveWord!=null)
                 return tmpReserveWord.wordSymbol;
 
+//-----------------------------标识符部分---------------------------------------------------------
             //否则为标识符，查看是否已在标识符表中，在则返回，不在则新建
+//            IdentWord tmpIdentWord=this.identer(this.tmpTokenString);
+//            if(tmpIdentWord!=null)
+//                return tmpIdentWord.wordSymbol;
+//
+//            tmpIdentWord=new IdentWord(tmpTokenString);
+//            this.identWordList.add(tmpIdentWord);
+//            return tmpIdentWord.wordSymbol;
+
+            //lab01-否则为标识符，查看是否在标识符表中，不在就看是否为main，是就加入，不是就err。
             IdentWord tmpIdentWord=this.identer(this.tmpTokenString);
             if(tmpIdentWord!=null)
                 return tmpIdentWord.wordSymbol;
-
-            tmpIdentWord=new IdentWord(tmpTokenString);
-            this.identWordList.add(tmpIdentWord);
-            return tmpIdentWord.wordSymbol;
+            if(this.tmpTokenString.equals("main"))
+            {
+                tmpIdentWord=new IdentWord(tmpTokenString);
+                this.identWordList.add(tmpIdentWord);
+                return tmpIdentWord.wordSymbol;
+            }
+            else
+                return "Err";
         }
         else if(Character.isDigit(fileChar[this.ptr]))
         {
+            int numType=10;
+            //16进制
+            if(fileChar[this.ptr]=='0'&&(fileChar[this.ptr+1]=='X'||fileChar[this.ptr+1]=='x'))
+            {
+                this.ptr+=2;
+                numType=16;
+                if(!(Character.isDigit(fileChar[this.ptr])||(fileChar[this.ptr]>='a'&&fileChar[this.ptr]<='f')
+                        ||(fileChar[this.ptr]>='A'&&fileChar[this.ptr]<='F')))
+                    return "Err";
+
+                while(Character.isDigit(fileChar[this.ptr])||(fileChar[this.ptr]>='a'&&fileChar[this.ptr]<='f')
+                        ||(fileChar[this.ptr]>='A'&&fileChar[this.ptr]<='F'))
+                {
+                    this.catToken(fileChar);
+                    this.getChar(fileChar);
+                }
+                this.retract();
+                this.tmpTokenNum=Integer.parseInt(this.tmpTokenString,numType);
+                return "Number("+tmpTokenNum+")";
+            }
+            //8或10进制
             while(Character.isDigit(fileChar[this.ptr]))
             {
                 //当前字符若是数字就贴到token后面，然后指针后移
@@ -166,19 +176,22 @@ public class Lexer {
                 this.getChar(fileChar);
             }
             this.retract();
-            this.tmpTokenNum=Integer.parseInt(this.tmpTokenString);
-            return "Number("+tmpTokenString+")";
+            if(this.tmpTokenString.startsWith("0"))
+                numType=8;
+            this.tmpTokenNum=Integer.parseInt(this.tmpTokenString,numType);
+            return "Number("+tmpTokenNum+")";
         }
-        else if(fileChar[this.ptr]=='=')
-        {
-            if(fileChar[this.ptr+1]=='=')
-            {
-                this.getChar(fileChar);
-                return "Eq";
-            }
-           // this.getChar(fileChar);
-            return "Assign";
-        }
+
+//        else if(fileChar[this.ptr]=='=')
+//        {
+//            if(fileChar[this.ptr+1]=='=')
+//            {
+//                this.getChar(fileChar);
+//                return "Eq";
+//            }
+//           // this.getChar(fileChar);
+//            return "Assign";
+//        }
         else if(fileChar[this.ptr]==';')
         {
             //this.getChar(fileChar);
@@ -204,31 +217,31 @@ public class Lexer {
             //this.getChar(fileChar);
             return "RBrace";
         }
-        else if(fileChar[this.ptr]=='+')
-        {
-            //this.getChar(fileChar);
-            return "Plus";
-        }
-        else if(fileChar[this.ptr]=='*')
-        {
-            //this.getChar(fileChar);
-            return "Mult";
-        }
-        else if(fileChar[this.ptr]=='/')
-        {
-           // this.getChar(fileChar);
-            return "Div";
-        }
-        else if(fileChar[this.ptr]=='<')
-        {
-           // this.getChar(fileChar);
-            return "Lt";
-        }
-        else if(fileChar[this.ptr]=='>')
-        {
-           // this.getChar(fileChar);
-            return "Gt";
-        }
+//        else if(fileChar[this.ptr]=='+')
+//        {
+//            //this.getChar(fileChar);
+//            return "Plus";
+//        }
+//        else if(fileChar[this.ptr]=='*')
+//        {
+//            //this.getChar(fileChar);
+//            return "Mult";
+//        }
+//        else if(fileChar[this.ptr]=='/')
+//        {
+//           // this.getChar(fileChar);
+//            return "Div";
+//        }
+//        else if(fileChar[this.ptr]=='<')
+//        {
+//           // this.getChar(fileChar);
+//            return "Lt";
+//        }
+//        else if(fileChar[this.ptr]=='>')
+//        {
+//           // this.getChar(fileChar);
+//            return "Gt";
+//        }
         else if(Character.isWhitespace(fileChar[this.ptr]))
         {
             return "Space";
@@ -237,7 +250,7 @@ public class Lexer {
             return "Err";
         }
     }
-    public void lexerMain(char[] fileChar,int fileLength){
+    public void lexerMain(char[] fileChar,int fileLength,List<String> resLexerList){
         this.lexerInit();
 //        String res=this.getSym(fileChar);
 //        System.out.println(res);
@@ -250,12 +263,17 @@ public class Lexer {
                 continue;
             else if(res.equals("Err"))
             {
-                System.out.println(res);
-                System.exit(0);
+               // System.out.println(res);
+                System.exit(1);
             }
-
+            else if(res.equals("END"))
+            {
+                resLexerList.add(res);
+                break;
+            }
             this.getChar(fileChar);
-            System.out.println(res);
+            resLexerList.add(res);
+
         }
     }
 
