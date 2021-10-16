@@ -31,10 +31,10 @@ public class Compiler {
         }
 //        System.out.println(fileLength);
 
-//        char fileChar[]=Comment.delComment(tmpFileChar,(int)tmpFileLength);
-//        long fileLength=Comment.fileLength;
-          char fileChar[]=tmpFileChar;
-          long fileLength=tmpFileLength;
+        char fileChar[]=Comment.delComment(tmpFileChar,(int)tmpFileLength);
+        long fileLength=Comment.fileLength;
+//          char fileChar[]=tmpFileChar;
+//          long fileLength=tmpFileLength;
         try {
             Writer out=new FileWriter(targetFile);
             out.write(fileChar,0,(int)fileLength);
