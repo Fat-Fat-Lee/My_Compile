@@ -35,6 +35,17 @@ public class Compiler {
         long fileLength=Comment.fileLength;
 //          char fileChar[]=tmpFileChar;
 //          long fileLength=tmpFileLength;
+
+       Lexer lexer=new Lexer();
+        lexer.lexerMain(fileChar,(int)fileLength,resLexerList);
+        Parser parser=new Parser();
+        parser.mainParser(resLexerList);
+
+        String resString="define dso_local i32 @main(){\n" +
+                "    ret i32 "+parser.tmpNum+"\n" +
+                "}";
+        fileChar=resString.toCharArray();
+        fileLength=resString.length();
         try {
             Writer out=new FileWriter(targetFile);
             out.write(fileChar,0,(int)fileLength);
@@ -45,12 +56,6 @@ public class Compiler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-       Lexer lexer=new Lexer();
-        lexer.lexerMain(fileChar,(int)fileLength,resLexerList);
-        Parser parser=new Parser();
-        parser.mainParser(resLexerList);
-
 
 //        for(char tmp:fileChar)
 //        {

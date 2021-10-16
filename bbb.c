@@ -1,3 +1,3 @@
-int main() { 
-    return 234;
+define dso_local i32 @main(){
+    ret i32 255
 }

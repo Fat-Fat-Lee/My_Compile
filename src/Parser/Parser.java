@@ -7,6 +7,7 @@ import java.util.List;
 public class Parser {
     public String tmpSym;
     public int resLexerIndex=0;
+    public String tmpNum;
     public void mainParser(List<String> resLexerList){
         getSym(resLexerList);
         if(tmpSym.equals("END"))
@@ -74,6 +75,7 @@ public class Parser {
             getSym(resLexerList);
             if(tmpSym.startsWith("Number"))
             {
+                tmpNum=tmpSym.substring(7,tmpSym.length()-1);
                 getSym(resLexerList);
                 if(tmpSym.equals("Semicolon"))
                 {

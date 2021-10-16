@@ -1,4 +1,1 @@
-int main() { // mian
-    return/* 123 */234;
-}
-	/*123333		
+int main(){return 0xFF;}
