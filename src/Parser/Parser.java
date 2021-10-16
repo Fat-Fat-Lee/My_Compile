@@ -14,13 +14,13 @@ public class Parser {
         compUnitParser(resLexerList);
     }
     public void compUnitParser(List<String> resLexerList){
-        System.out.println("IN compunit");
+      //  System.out.println("IN compunit");
 
         funcDefParser(resLexerList);
-        System.out.println("compUnit");
+       // System.out.println("compUnit");
     }
     public void funcDefParser(List<String> resLexerList){
-        System.out.println("IN funcdef");
+        //System.out.println("IN funcdef");
 
         funcTypeParser(resLexerList);
         while(tmpSym.startsWith("Ident")){
@@ -32,12 +32,12 @@ public class Parser {
                     blockParser(resLexerList);
                 }
                 else
-                    System.exit(2);
+                    System.exit(0);
             }
             else
-                System.exit(2);
+                System.exit(0);
         }
-        System.out.println("funcDef");
+      //  System.out.println("funcDef");
     }
     public void blockParser(List<String> resLexerList){
         System.out.println("IN block");
@@ -51,23 +51,23 @@ public class Parser {
                 System.out.println("block");
             }
             else
-                System.exit(2);
+                System.exit(0);
         }
         else
-            System.exit(2);
+            System.exit(0);
     }
     public void funcTypeParser(List<String> resLexerList){
-        System.out.println("IN functype");
+      //  System.out.println("IN functype");
         if(tmpSym.equals("Int"))
         {
             getSym(resLexerList);
-            System.out.println("funcType");
+          //  System.out.println("funcType");
         }
         else
-            System.exit(2);
+            System.exit(0);
     }
     public void stmtParser(List<String> resLexerList){
-        System.out.println("IN stmt");
+      //  System.out.println("IN stmt");
 
         if(tmpSym.equals("Return"))
         {
@@ -78,16 +78,16 @@ public class Parser {
                 if(tmpSym.equals("Semicolon"))
                 {
                     getSym(resLexerList);
-                    System.out.println("stmt");
+                  //  System.out.println("stmt");
                 }
                 else
-                    System.exit(2);
+                    System.exit(0);
             }
             else
-                System.exit(2);
+                System.exit(0);
         }
         else
-            System.exit(2);
+            System.exit(0);
 
     }
     public void getSym(List<String> resLexerList){
