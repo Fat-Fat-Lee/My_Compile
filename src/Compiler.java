@@ -31,8 +31,10 @@ public class Compiler {
         }
 //        System.out.println(fileLength);
 
-        char fileChar[]=Comment.delComment(tmpFileChar,(int)tmpFileLength);
-        long fileLength=Comment.fileLength;
+//        char fileChar[]=Comment.delComment(tmpFileChar,(int)tmpFileLength);
+//        long fileLength=Comment.fileLength;
+          char fileChar[]=tmpFileChar;
+          long fileLength=tmpFileLength;
         try {
             Writer out=new FileWriter(targetFile);
             out.write(fileChar,0,(int)fileLength);
@@ -44,12 +46,12 @@ public class Compiler {
             e.printStackTrace();
         }
 
-  /*      Lexer lexer=new Lexer();
+       Lexer lexer=new Lexer();
         lexer.lexerMain(fileChar,(int)fileLength,resLexerList);
         Parser parser=new Parser();
         parser.mainParser(resLexerList);
 
-   */
+
 //        for(char tmp:fileChar)
 //        {
 //            System.out.print(tmp);
