@@ -264,7 +264,7 @@ public class Lexer {
             else if(res.equals("Err"))
             {
                // System.out.println(res);
-                System.exit(1);
+                System.exit(9999);
             }
             else if(res.equals("END"))
             {
