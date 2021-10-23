@@ -217,21 +217,31 @@ public class Lexer {
             //this.getChar(fileChar);
             return "RBrace";
         }
-//        else if(fileChar[this.ptr]=='+')
-//        {
-//            //this.getChar(fileChar);
-//            return "Plus";
-//        }
-//        else if(fileChar[this.ptr]=='*')
-//        {
-//            //this.getChar(fileChar);
-//            return "Mult";
-//        }
-//        else if(fileChar[this.ptr]=='/')
-//        {
-//           // this.getChar(fileChar);
-//            return "Div";
-//        }
+        else if(fileChar[this.ptr]=='+')
+        {
+            //this.getChar(fileChar);
+            return "Plus";
+        }
+        else if(fileChar[this.ptr]=='-')
+        {
+            //this.getChar(fileChar);
+            return "Minus";
+        }
+        else if(fileChar[this.ptr]=='*')
+        {
+            //this.getChar(fileChar);
+            return "Mult";
+        }
+        else if(fileChar[this.ptr]=='/')
+        {
+           // this.getChar(fileChar);
+            return "Div";
+        }
+        else if(fileChar[this.ptr]=='%')
+        {
+            // this.getChar(fileChar);
+            return "Percent";
+        }
 //        else if(fileChar[this.ptr]=='<')
 //        {
 //           // this.getChar(fileChar);

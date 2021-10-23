@@ -1,3 +1,5 @@
+import Analysis.AnalysisExp;
+import Analysis.analysis;
 import Comment.Comment;
 import Lexer.Lexer;
 import Parser.Parser;
@@ -13,7 +15,7 @@ public class Compiler {
         String fileName=args[0];
         String targetFileName=args[1];
 //        String fileName="C:\\Users\\惠普\\Desktop\\大三上ljw\\编译原理\\My_Compile\\aaa.txt";
-//        String targetFileName="C:\\Users\\惠普\\Desktop\\大三上ljw\\编译原理\\My_Compile\\bbb.c";
+//        String targetFileName="C:\\Users\\惠普\\Desktop\\大三上ljw\\编译原理\\My_Compile\\bbb.ll";
         File testFile=new File(fileName);
         File targetFile=new File(targetFileName);
         long tmpFileLength=testFile.length();
@@ -35,15 +37,21 @@ public class Compiler {
         long fileLength=Comment.fileLength;
 //          char fileChar[]=tmpFileChar;
 //          long fileLength=tmpFileLength;
-
+        List<String> resllList=new ArrayList<>();//记录ll代码的字符串数组
        Lexer lexer=new Lexer();
         lexer.lexerMain(fileChar,(int)fileLength,resLexerList);
-        Parser parser=new Parser();
-        parser.mainParser(resLexerList);
 
-        String resString="define dso_local i32 @main(){\n" +
-                "    ret i32 "+parser.tmpNum+"\n" +
-                "}";
+        Parser parser=new Parser();
+        parser.mainParser(resLexerList,resllList);
+
+        String resString=new String();
+        for(String tmp:resllList){
+            resString+=tmp;
+        }
+
+//        String resString="define dso_local i32 @main(){\n" +
+//                "    ret i32 "+parser.tmpNum+"\n" +
+//                "}";
         fileChar=resString.toCharArray();
         fileLength=resString.length();
         try {
@@ -57,10 +65,10 @@ public class Compiler {
             e.printStackTrace();
         }
 
-//        for(char tmp:fileChar)
-//        {
-//            System.out.print(tmp);
-//        }
+        for(char tmp:fileChar)
+        {
+            System.out.print(tmp);
+        }
 
     }
 }
