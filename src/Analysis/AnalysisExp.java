@@ -64,6 +64,7 @@ public class AnalysisExp {
                 String tmp=expAnalysisList.get(i-1);
                 if(!tmp.startsWith("Number")&&!tmp.equals("RPar"))
                 {
+                    //System.out.println("WHY!!!"+tmp);
                     expAnalysisList.add(i , "Number(0)");
                     i++;
                 }
@@ -78,17 +79,14 @@ public class AnalysisExp {
         for(int i=0;i<expAnalysisList.size();i++)
         {
             String tmpi=expAnalysisList.get(i);
-            if(afterStack.empty())
-            {
-                afterStack.push(tmpi);
-                continue;
-            }
+           // System.out.println("后缀栈！！"+tmpi);
             if(tmpi.startsWith("Number"))
                 afterStack.push(tmpi);
             else if(tmpi.equals("Mult")||tmpi.equals("Div")||tmpi.equals("Percent"))
             {
                 while(!symbolStack.empty())
                 {
+                    int tag=1;
                     String symbolTmp=symbolStack.pop();
                     if(symbolTmp.equals("LPar"))
                     {
@@ -96,12 +94,13 @@ public class AnalysisExp {
                         break;
                     }
                     else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent"))
-                       afterStack.push(symbolTmp);
-                    else
-                        tmpStack.push(symbolTmp);
+                        afterStack.push(symbolTmp);
+
+                    else {
+                        symbolStack.push(symbolTmp);
+                        break;
+                    }
                 }
-                while(!tmpStack.empty())
-                    symbolStack.push(tmpStack.pop());
                symbolStack.push(tmpi);
             }
             else if(tmpi.equals("Plus")||tmpi.equals("Minus"))
@@ -118,27 +117,38 @@ public class AnalysisExp {
                     ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus"))
                         afterStack.push(symbolTmp);
                     else
-                        tmpStack.push(symbolTmp);
+                    {
+                        symbolStack.push(symbolTmp);
+                        break;
+                    }
                 }
-                while(!tmpStack.empty())
-                    symbolStack.push(tmpStack.pop());
                symbolStack.push(tmpi);
             }
             else if(tmpi.equals("LPar"))
+            {
                 symbolStack.push("LPar");
+               // System.out.println("LPar pushing!!! ");
+            }
             else if(tmpi.equals("RPar"))
             {
+                int tag=0;
                 String symbolTmp=symbolStack.peek();
+                if(symbolTmp.equals("LPar")) {
+                    symbolStack.pop();
+                   // System.out.println("PPPSJDAOSIJD");
+                }
                 while(!symbolTmp.equals("LPar"))
                 {
+                    tag=1;
                     symbolTmp=symbolStack.pop();
                     afterStack.push(symbolTmp);
                 }
-                afterStack.pop();
+                if(tag==1)
+                    afterStack.pop();
             }
             else
             {
-                //System.out.println(tmpi);
+
                 System.exit(3);
             }
 
@@ -151,16 +161,17 @@ public class AnalysisExp {
     {
         //把后缀表达式栈中的内容倒过来，变成正序的后缀表达式放入临时栈中
         Exp tmpExp;
+        System.out.println("后缀表达式！");
         while(!afterStack.empty())
         {
-           // System.out.println(afterStack.size());
+            System.out.println(afterStack.peek());
             tmpStack.push(afterStack.pop());
         }
         if(tmpStack.size()==1)
         {
             String retString=tmpStack.peek();
             resllList.add("ret i32 "+retString.substring(7,retString.length()-1)+"\n");
-            System.out.println(resllList.get(0));
+           // System.out.println(resllList.get(0));
             return;
         }
 
@@ -176,13 +187,13 @@ public class AnalysisExp {
                 {
                     tmpExp=tmpAnalysis.generStoreExp(tmp,arg1,arg2,"MultExp");
                    // System.out.println(tmpExp.arg1);
-                    System.out.println(tmpExp.generExpll());
+                  // System.out.println(tmpExp.generExpll());
                    resllList.add(tmpExp.generExpll());
                 }
                 else
                 {
                     tmpExp=tmpAnalysis.generStoreExp(tmp,arg1,arg2,"AddExp");
-                    System.out.println(tmpExp.generExpll());
+                   // System.out.println(tmpExp.generExpll());
                    resllList.add(tmpExp.generExpll());
                 }
                 llStack.push(tmpExp.result);
