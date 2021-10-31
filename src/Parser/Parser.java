@@ -124,7 +124,13 @@ public class Parser {
             expAnalysisList.add(resLexerList.get(i));
             System.out.println(resLexerList.get(i));
         }
+        AnalysisExp tmpAnalysisExp=new AnalysisExp();
         String resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+        if(tmpAnalysisExp.ifBian)
+        {
+            System.out.println("变量不可以赋值给常量");
+            System.exit(3);
+        }
         //顺利把表达式字符串数组送去变为ll编码了
 
         System.out.println("constInitVal");

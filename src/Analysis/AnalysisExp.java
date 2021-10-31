@@ -16,6 +16,7 @@ public class AnalysisExp {
     public Stack<String> symbolStack=new Stack<>();//符号栈
     public Stack<String> tmpStack=new Stack<>();//临时栈
     public Stack<String> llStack=new Stack<>();//输出ll的运算栈
+    public boolean ifBian=false;
     public void fixUnaryExp(List<String> expAnalysisList)//把形如（++++1--+2）的式子转换为正常形式
     {
         //处理连续+，连续-
@@ -104,6 +105,7 @@ public class AnalysisExp {
                             symbolStack.push(tmpi);
                         }
                         else {
+                            ifBian=true;
                             IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
                             afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
                         }
