@@ -105,7 +105,8 @@ public class AnalysisExp {
                             symbolStack.push(tmpi);
                         }
                         else {
-                            ifBian=true;
+                            if(!tmpIdent.ifConst)
+                                ifBian=true;
                             IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
                             afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
                         }
