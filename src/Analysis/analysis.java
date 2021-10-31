@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class analysis {
-    public int storeNum=0;
+    public static int storeNum=1;
 
     //生成表达式存储位置
-    public String generStoreLocate(){
-        return "%x"+storeNum++;
+    public static String generStoreLocate(){
+        return "%"+storeNum++;
     }
 
     //生成表达式的四元式

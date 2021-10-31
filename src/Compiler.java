@@ -31,24 +31,33 @@ public class Compiler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        System.out.println(fileLength);
+//-------------------------------------------debug使用输出测试代码！----------------------------------------------
 
+        for(char tmp:tmpFileChar)
+            System.out.print(tmp);
+        System.out.println("------------测试代码输出结束！---------------");
+        System.out.println();
+
+
+
+
+//-------------------------------去掉注释，词法分析，语法分析生成ll代码---------------------------------------
         char fileChar[]=Comment.delComment(tmpFileChar,(int)tmpFileLength);
         long fileLength=Comment.fileLength;
 //          char fileChar[]=tmpFileChar;
 //          long fileLength=tmpFileLength;
         List<String> resllList=new ArrayList<>();//记录ll代码的字符串数组
        Lexer lexer=new Lexer();
-        lexer.lexerMain(fileChar,(int)fileLength,resLexerList);
+        lexer.lexerMain(fileChar,(int)fileLength,resLexerList,resllList);
 
         Parser parser=new Parser();
-        parser.mainParser(resLexerList,resllList);
+        parser.mainParser(lexer,resLexerList,resllList);
 
         String resString=new String();
         for(String tmp:resllList){
             resString+=tmp;
         }
-
+//------------------------------------ll代码写入文件---------------------------------------------------------
 //        String resString="define dso_local i32 @main(){\n" +
 //                "    ret i32 "+parser.tmpNum+"\n" +
 //                "}";
