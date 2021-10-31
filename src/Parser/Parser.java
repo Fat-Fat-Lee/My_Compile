@@ -125,7 +125,7 @@ public class Parser {
             System.out.println(resLexerList.get(i));
         }
         AnalysisExp tmpAnalysisExp=new AnalysisExp();
-        String resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+        String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
         if(tmpAnalysisExp.ifBian)
         {
             System.out.println("变量不可以赋值给常量");
