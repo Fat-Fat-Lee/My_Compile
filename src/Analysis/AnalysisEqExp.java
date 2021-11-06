@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class AnalysisExp {
+public class AnalysisEqExp {
     public Stack<String> afterStack=new Stack<>();//后缀表达式栈
     public Stack<String> symbolStack=new Stack<>();//符号栈
     public Stack<String> tmpStack=new Stack<>();//临时栈
     public Stack<String> llStack=new Stack<>();//输出ll的运算栈
     public boolean ifBian=false;
 
-    public AnalysisExp() {
+    public AnalysisEqExp() {
     }
 
     public void fixUnaryExp(List<String> expAnalysisList)//把形如（++++1--+2）的式子转换为正常形式
@@ -61,7 +61,7 @@ public class AnalysisExp {
                 {
                     for(int j=numStart;j<i;j++)
                         expAnalysisList.set(j,"Plus");
-                    expAnalysisList.set(i-1,"Oppose");
+                        expAnalysisList.set(i-1,"Oppose");
                 }
                 else if(numMinus%2==1&&numOppose%2==1)
                 {
@@ -82,7 +82,7 @@ public class AnalysisExp {
             if(tmp0.equals("Oppose"))
             {
                 expAnalysisList.add(i,"LPar");
-                expAnalysisList.add(i+2,"Ne");
+                expAnalysisList.add(i+2,"Eq");
                 expAnalysisList.add(i+3,"Number(0)");
                 expAnalysisList.add(i+4,"RPar");
             }
@@ -375,7 +375,10 @@ public class AnalysisExp {
             else if(retString.startsWith("Number"))
                 retString="i32 "+retString.substring(7,retString.length()-1);
 
-            return retString;//若是只有一个数字，直接返回，若是变量已经转化为寄存器形式
+            String locate=analysis.generStoreLocate();
+            resllList.add(locate+"= icmp ne "+retString+", 0\n");
+
+            return locate;//若是只有一个数字，返回是否为零
         }
 
         while(!tmpStack.empty())
@@ -491,8 +494,8 @@ public class AnalysisExp {
             System.out.println(tmp);
         }
         //将结果转换为i1形式
-//        String arg="%"+(analysis.storeNum-1);
-//        Exp.generI1ll(arg,resllList);
+        String arg="%"+(analysis.storeNum-1);
+        Exp.generI1ll(arg,resllList);
 
         return "%"+(analysis.storeNum-1);//返回最后使用的寄存器
     }

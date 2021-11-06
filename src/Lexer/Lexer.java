@@ -16,8 +16,8 @@ public class Lexer {
     //lexer初始化
     public void lexerInit(List<String> resllList){
         this.reserveWordList.add(new ReserveWord("int","Int"));
-//        this.reserveWordList.add(new ReserveWord("if","If"));
-//        this.reserveWordList.add(new ReserveWord("else","Else"));
+        this.reserveWordList.add(new ReserveWord("if","If"));
+        this.reserveWordList.add(new ReserveWord("else","Else"));
 //        this.reserveWordList.add(new ReserveWord("while","While"));
 //        this.reserveWordList.add(new ReserveWord("break","Break"));
 //        this.reserveWordList.add(new ReserveWord("continue","Continue"));
@@ -179,12 +179,12 @@ public class Lexer {
 
         else if(fileChar[this.ptr]=='=')
         {
-//            if(fileChar[this.ptr+1]=='=')
-//            {
-//                this.getChar(fileChar);
-//                return "Eq";
-//            }
-           // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='=')
+            {
+                this.getChar(fileChar);
+                return "Eq";
+            }
+            //this.getChar(fileChar);
             return "Assign";
         }
         else if(fileChar[this.ptr]==',')
@@ -242,16 +242,58 @@ public class Lexer {
             // this.getChar(fileChar);
             return "Percent";
         }
-//        else if(fileChar[this.ptr]=='<')
-//        {
-//           // this.getChar(fileChar);
-//            return "Lt";
-//        }
-//        else if(fileChar[this.ptr]=='>')
-//        {
-//           // this.getChar(fileChar);
-//            return "Gt";
-//        }
+        else if(fileChar[this.ptr]=='<')
+        {
+           // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='=')
+            {
+                this.getChar(fileChar);
+                return "Le";
+            }
+            return "Lt";
+        }
+        else if(fileChar[this.ptr]=='>')
+        {
+           // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='=')
+            {
+                this.getChar(fileChar);
+                return "Ge";
+            }
+            return "Gt";
+        }
+        else if(fileChar[this.ptr]=='!')
+        {
+            // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='=')
+            {
+                this.getChar(fileChar);
+                return "Ne";
+            }
+            return "Oppose";
+        }
+        else if(fileChar[this.ptr]=='&')
+        {
+            // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='&')
+            {
+                this.getChar(fileChar);
+                return "And";
+            }
+            else
+                System.exit(1);
+        }
+        else if(fileChar[this.ptr]=='|')
+        {
+            // this.getChar(fileChar);
+            if(fileChar[this.ptr+1]=='|')
+            {
+                this.getChar(fileChar);
+                return "Or";
+            }
+            else
+                System.exit(1);
+        }
         else if(Character.isWhitespace(fileChar[this.ptr]))
         {
             return "Space";
@@ -259,6 +301,7 @@ public class Lexer {
         else{
             return "Err";
         }
+        return "";
     }
     public void lexerMain(char[] fileChar,int fileLength,List<String> resLexerList,List<String> resllList){
         this.lexerInit(resllList);
@@ -282,6 +325,8 @@ public class Lexer {
                 break;
             }
             this.getChar(fileChar);
+
+            System.out.println(res);
             resLexerList.add(res);
 
         }

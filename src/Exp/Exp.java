@@ -1,5 +1,9 @@
 package Exp;
 
+import Analysis.analysis;
+
+import java.util.List;
+
 public class Exp {
     //四元式
     public String op;//运算符
@@ -29,6 +33,18 @@ public class Exp {
                 ", type='" + type + '\'' +
                 '}';
     }
+    public static String generZextll(String arg, List<String> resllList){
+        String locate=analysis.generStoreLocate();
+        resllList.add(locate+" = zext i1 "+arg+" to i32\n");
+        System.out.println(locate+" = zext i1 "+arg+" to i32");
+        return locate;
+    }
+    public static String generI1ll(String arg, List<String> resllList){
+        String locate=analysis.generStoreLocate();
+        resllList.add(locate+"= icmp ne i32 "+arg+", 0\n");
+        System.out.println(locate+" = zext i1 "+arg+" to i32");
+        return locate;
+    }
 
     public String generExpll(){
         String arg1_=new String();
@@ -48,12 +64,31 @@ public class Exp {
             return result+" = add i32 "+arg1_+","+arg2_+"\n";
         else if(op.equals("Minus"))
             return result+" = sub i32 "+arg1_+","+arg2_+"\n";
+
         else if(op.equals("Mult"))
             return result+" = mul i32 "+arg1_+","+arg2_+"\n";
         else if(op.equals("Div"))
             return result+" = sdiv i32 "+arg1_+","+arg2_+"\n";
-        else if(op.equals("Percent"))
-            return result+" = srem i32 "+arg1_+","+arg2_+"\n";
+
+        else if(op.equals("Lt"))
+            return result+" = icmp slt i32 "+arg1_+","+arg2_+"\n";
+        else if(op.equals("Le"))
+            return result + " = icmp sle i32 " + arg1_ + "," + arg2_ + "\n";
+        else if(op.equals("Gt"))
+            return result + " = icmp sgt i32 " + arg1_ + "," + arg2_ + "\n";
+        else if(op.equals("Ge"))
+            return result + " = icmp sge i32 " + arg1_ + "," + arg2_ + "\n";
+
+        else if(op.equals("Eq"))
+            return result + " = icmp eq i32 " + arg1_ + "," + arg2_ + "\n";
+        else if(op.equals("Ne"))
+            return result + " = icmp ne i32 " + arg1_ + "," + arg2_ + "\n";
+
+        else if(op.equals("And"))
+            return result+" = and "+arg1_+","+arg2_+"\n";
+        else if(op.equals("Or"))
+            return result+" = or "+arg1_+","+arg2_+"\n";
+
         return "";
     }
 

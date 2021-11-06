@@ -1,7 +1,11 @@
 package Parser;
 
+import Analysis.AnalysisEqExp;
 import Analysis.AnalysisExp;
 import Analysis.analysis;
+import Block.BlockList;
+import Block.IfBlock;
+import Block.MainBlock;
 import Lexer.Lexer;
 import Lexer.IdentWord;
 import Var.NumNormal;
@@ -19,6 +23,7 @@ public class Parser {
         if(tmpSym.equals("END"))
             System.exit(0);
         compUnitParser(tmpLexer,resLexerList,resllList);
+        BlockList.findBrLocate(resllList);
     }
 
     public void compUnitParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
@@ -29,7 +34,7 @@ public class Parser {
     }
     public void funcDefParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN funcdef");
-
+        resllList.add("define dso_local i32 @main(){"+"\n");
         funcTypeParser(tmpLexer,resLexerList,resllList);
         if(tmpSym.startsWith("Ident")){
             getSym(resLexerList);
@@ -38,6 +43,7 @@ public class Parser {
                 if(tmpSym.equals("RPar")){
                     getSym(resLexerList);
                     blockParser(tmpLexer,resLexerList,resllList);
+                    resllList.add("}"+"\n");
                 }
                 else
                     System.exit(2);
@@ -164,6 +170,7 @@ public class Parser {
             String varSym=tmpSym;
             IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false);
             getSym(resLexerList);
+
             //进行赋值,生成赋值声明语句
             String resString=new String();
             getSym(resLexerList);
@@ -219,14 +226,14 @@ public class Parser {
 
         if(tmpSym.equals("LBrace")){
             getSym(resLexerList);
-            resllList.add("define dso_local i32 @main(){"+"\n");
-            while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||
+            while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
                     tmpSym.equals("Return")||tmpSym.equals("Const")||tmpSym.equals("Int")||
-                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number"))
+                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.startsWith("If"))
                 blockItemParser(tmpLexer,resLexerList,resllList);
+
             if(tmpSym.equals("RBrace")) {
                 getSym(resLexerList);
-                resllList.add("}"+"\n");
+               // resllList.add("}"+"\n");
             }
             else
                 System.exit(2);
@@ -237,11 +244,12 @@ public class Parser {
     }
     public void blockItemParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN blockItem");
-        //System.out.println("----------checking blockItem--------"+tmpSym);
+//        System.out.println("----------checking blockItem--------"+tmpSym);
         if(tmpSym.equals("Const")||tmpSym.equals("Int"))
             declParser(tmpLexer,resLexerList,resllList);
-        else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||
-                tmpSym.equals("Return")|| tmpSym.startsWith("Ident")||tmpSym.startsWith("Number"))
+        else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppoose")||
+                tmpSym.equals("Return")|| tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||
+                tmpSym.startsWith("If"))
             stmtParser(tmpLexer,resLexerList,resllList);
         else
             System.exit(2);
@@ -281,7 +289,10 @@ public class Parser {
             else
                 System.exit(2);
         }
-        else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||
+        else if(tmpSym.equals("LBrace"))
+            blockParser(tmpLexer,resLexerList,resllList);
+
+        else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
                 tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.equals("Semicolon"))
         {
             if(tmpSym.equals("Semicolon"))
@@ -305,6 +316,103 @@ public class Parser {
                     System.exit(2);
 
             }
+        }
+        else if(tmpSym.equals("If"))
+        {   //跳转到条件块,生成条件块声明
+            String type="if";
+            if(resLexerList.get(resLexerIndex-2).equals("Else"))
+                type="elif";
+
+            String condLocate=analysis.generStoreLocate();
+            int intCondLocate=analysis.storeNum-1;
+            resllList.add("\n");
+            int brInIndex=resllList.size()-1;
+            System.out.println("\n");
+            resllList.add(intCondLocate+":\n");
+            System.out.println(intCondLocate+":");
+
+            getSym(resLexerList);
+            if(tmpSym.equals("LPar"))
+            {
+                getSym(resLexerList);
+                String condJudgeLocate=condParser(tmpLexer,resLexerList,resllList);
+                String actionLocate=analysis.generStoreLocate();
+                int intActionLocate=analysis.storeNum-1;
+                resllList.add("br i1 "+condJudgeLocate+",label "+actionLocate+", label %x\n");
+                System.out.println("br i1 "+condJudgeLocate+",label "+actionLocate+", label %x\n");
+                int brCondIndex=resllList.size()-1;
+
+                //------------------条件部分处理完毕-----------------------
+
+                if(tmpSym.equals("RPar"))
+                {
+                    getSym(resLexerList);
+
+                    //动作块生成
+                    resllList.add(intActionLocate+":\n");
+                    System.out.println(intActionLocate+":");
+
+                    stmtParser(tmpLexer,resLexerList,resllList);
+//                    String actionBrLocate=analysis.generStoreLocate();
+                    resllList.add("br label %x \n");
+                    int brActionIndex=resllList.size()-1;
+                    //动作块跳转语句生成，生成条件块,加入块队列
+                    IfBlock tmpIfBlock=new IfBlock(type,condLocate,actionLocate,condJudgeLocate,brCondIndex,brActionIndex);
+                    if(type.equals("if"))
+                        tmpIfBlock.brInIndex=brInIndex;
+                    BlockList.blockList.add(tmpIfBlock);
+
+                    if(tmpSym.equals("Else"))
+                    {
+                        getSym(resLexerList);
+
+                        //准备生成else块
+                        if(!tmpSym.equals("If"))
+                        {
+                            //else动作块生成
+                            String elseActionLocate=analysis.generStoreLocate();
+                            int elseIntActionLocate=analysis.storeNum-1;
+                            resllList.add(elseIntActionLocate+":\n");
+                            System.out.println(elseIntActionLocate+":");
+
+                            stmtParser(tmpLexer,resLexerList,resllList);
+                            resllList.add("br label %x\n");
+                            System.out.println("br label %x\n");
+                            int elsebrActionIndex=resllList.size()-1;
+                            IfBlock elseBlock=new IfBlock("else",elseActionLocate,elsebrActionIndex);
+                            BlockList.blockList.add(elseBlock);
+                            //动作块跳转语句生成,并生成else块
+
+                            if(!tmpSym.equals("If"))
+                            {
+                                String mainLocate=analysis.generStoreLocate();
+                                int intMainLocate=analysis.storeNum-1;
+                                resllList.add(intMainLocate+":\n");
+                                System.out.println(intMainLocate+":");
+                                MainBlock mainBlock=new MainBlock("main",mainLocate);
+                                BlockList.blockList.add(mainBlock);
+                            }
+                        }
+                        else
+                            stmtParser(tmpLexer,resLexerList,resllList);
+
+                    }
+                    //若后面不再是条件语句，帮忙生成块声明
+                    else
+                    {
+                        String mainLocate=analysis.generStoreLocate();
+                        int intMainLocate=analysis.storeNum-1;
+                        resllList.add(mainLocate+":\n");
+                        System.out.println(mainLocate+":");
+                        MainBlock mainBlock=new MainBlock("main",mainLocate);
+                        BlockList.blockList.add(mainBlock);
+                    }
+                }
+                else
+                    System.exit(2);
+            }
+            else
+                System.exit(2);
         }
         else if(tmpSym.equals("Return"))
         {
@@ -368,7 +476,7 @@ public class Parser {
     public void addExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN addExp");
         mulExpParser(tmpLexer,resLexerList,resllList);
-        while(tmpSym.equals("Plus")||tmpSym.equals("Minus")){
+        while(tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")){
             getSym(resLexerList);
             mulExpParser(tmpLexer,resLexerList,resllList);
         }
@@ -398,7 +506,7 @@ public class Parser {
             }
             else{
                 funcParamsParser(tmpLexer,resLexerList,resllList);
-                while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||
+                while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
                         tmpSym.equals("Return")||tmpSym.equals("Const")||tmpSym.equals("Int")||
                         tmpSym.startsWith("Ident")||tmpSym.startsWith("Number"))
                     funcParamsParser(tmpLexer,resLexerList,resllList);
@@ -413,7 +521,7 @@ public class Parser {
         else if(tmpSym.equals("LPar")||tmpSym.startsWith("Number")||tmpSym.startsWith("Ident"))
             primaryExpParser(tmpLexer,resLexerList,resllList);
 
-        else if(tmpSym.equals("Plus")||tmpSym.equals("Minus"))
+        else if(tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose"))
         {
             unaryOpParser(tmpLexer,resLexerList,resllList);
             unaryExpParser(tmpLexer,resLexerList,resllList);
@@ -453,15 +561,74 @@ public class Parser {
     }
     public void unaryOpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN unaryOp");
-        if(tmpSym.equals("Plus")||tmpSym.equals("Minus"))
+        if(tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose"))
             getSym(resLexerList);
         else
             System.exit(2);
         System.out.println("unaryOpParser");
     }
+//--------------------------------条件表达式相关-----------------------------------
+    public String condParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN cond");
 
+        int startExp=resLexerIndex-1;
+        lOrExpParser(tmpLexer,resLexerList,resllList);
+        int endExp=resLexerIndex-2;
+        List<String>expAnalysisList=new ArrayList<>();
+        for(int i=startExp;i<=endExp;i++) {
+            expAnalysisList.add(resLexerList.get(i));
+            System.out.println(resLexerList.get(i));
+        }
+        String condLocate=new AnalysisEqExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+        //顺利把表达式字符串数组送去变为ll编码了
 
+        System.out.println("condParser");
+        return condLocate;
+    }
+    public void lOrExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN lOr");
 
+        lAndExpParser(tmpLexer,resLexerList,resllList);
+        while(tmpSym.equals("Or"))
+        {
+            getSym(resLexerList);
+            lAndExpParser(tmpLexer,resLexerList,resllList);
+        }
+        System.out.println("lOrParser");
+    }
+    public void lAndExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN lAnd");
+
+        eqExpParser(tmpLexer,resLexerList,resllList);
+        while(tmpSym.equals("And"))
+        {
+            getSym(resLexerList);
+            eqExpParser(tmpLexer,resLexerList,resllList);
+        }
+        System.out.println("lAndParser");
+    }
+    public void eqExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN eq");
+        relExpParser(tmpLexer,resLexerList,resllList);
+        while(tmpSym.equals("Eq")||tmpSym.equals("Ne"))
+        {
+            getSym(resLexerList);
+            relExpParser(tmpLexer,resLexerList,resllList);
+        }
+        System.out.println("eqParser");
+    }
+    public void relExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN rel");
+        addExpParser(tmpLexer,resLexerList,resllList);
+        while(tmpSym.equals("Lt")||tmpSym.equals("Le")||tmpSym.equals("Gt")||tmpSym.equals("Ge"))
+        {
+            getSym(resLexerList);
+            addExpParser(tmpLexer,resLexerList,resllList);
+        }
+        System.out.println("relParser");
+    }
+
+//------------------------------------------------------------------------------
     public boolean getSym(List<String> resLexerList){
         if(resLexerIndex<resLexerList.size())
         {
