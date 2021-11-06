@@ -114,25 +114,41 @@ public class BlockList {
             }
             else if(tmpBlock.type.equals("main"))
             {//动作块，跳去最近的main块或者下一个if块
-                int j=i+1;
-                if(j<blockList.size())
+                int tag=0;
+                if(i+1<blockList.size()&&blockList.get(i+1).type.equals("if"))
+                {}
+                else
                 {
-                    Block tmpFindBlock=blockList.get(j);
-                    if(tmpFindBlock.type.equals("elif")||tmpFindBlock.type.equals("else"))
+                    int setIndex=0;
+                    if(i+1<blockList.size())
                     {
-                        System.out.println(((MainBlock)tmpBlock).mainLocate);
-                        System.out.println("希望上面的else或者else if修改为if");
-                        System.exit(3);
+                        Block mainThing=blockList.get(i+1);
+                        if(mainThing.type.equals("elif")||mainThing.type.equals("else"))
+                        {
+                            setIndex=((IfBlock) mainThing).mainLastBrIndex;
+                            System.out.println(setIndex);
+                        }
+                        else if(mainThing.type.equals("main"))
+                        {
+                            setIndex=((MainBlock) mainThing).mainLastBrIndex;
+                            System.out.println("BBB");
+                        }
+
                     }
-//                    else if(tmpFindBlock.type.equals("if"))
-//                    {
-////                        resllList.set(((IfBlock)tmpFindBlock).brInIndex,"br label "+((IfBlock)tmpFindBlock).condLocate+"\n");
-//                    }
-                    else if(tmpFindBlock.type.equals("main"))
+                    for(int j=i+1;j<blockList.size();j++)
                     {
-                        resllList.set(((MainBlock)tmpFindBlock).mainLastBrIndex-1,"br label "+((MainBlock)tmpFindBlock).mainLocate+"\n");
+                        Block tmpFindBlock=blockList.get(j);
+                        if(tmpFindBlock.type.equals("main"))
+                        {
+                            System.out.println("jdkcnjnsckjdn"+((MainBlock) tmpFindBlock).mainLocate);
+                            resllList.set(setIndex,"br label "+((MainBlock) tmpFindBlock).mainLocate+"\n");
+                            break;
+                        }
+
                     }
+
                 }
+
             }
             else
                 System.exit(3);
@@ -141,6 +157,8 @@ public class BlockList {
         {
             if(resllList.get(i).startsWith("ret")&&i+1<resllList.size()&&resllList.get(i+1).startsWith("br"))
                 resllList.set(i+1,"\n");
+            if(resllList.get(i).startsWith("br")&&i+1<resllList.size()&&resllList.get(i+1).startsWith("br"))
+                resllList.set(i,"\n");
         }
     }
 }

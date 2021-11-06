@@ -14,6 +14,7 @@ public class IfBlock extends Block{
     public int brCondIndex=0;//条件块跳转语句在resllList中的下标，后面一起修改
     public int brActionIndex=0;
     public int brInIndex=0;
+    public int mainLastBrIndex;
 
     public IfBlock() {
     }

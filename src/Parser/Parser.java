@@ -353,6 +353,8 @@ public class Parser {
                     BlockList.blockList.add(tmpIfBlock);
 
                     //动作块生成, 动作块跳转语句生成，生成条件块,加入块队列
+                    resllList.add("\n");
+                    tmpIfBlock.mainLastBrIndex=resllList.size()-1;
                     resllList.add(intActionLocate+":\n");
                     System.out.println(intActionLocate+":");
 
@@ -381,6 +383,9 @@ public class Parser {
                             //else动作块生成
                             String elseActionLocate=analysis.generStoreLocate();
                             int elseIntActionLocate=analysis.storeNum-1;
+                            resllList.add("\n");
+                            elseBlock.mainLastBrIndex=resllList.size()-1;
+
                             resllList.add(elseIntActionLocate+":\n");
                             System.out.println(elseIntActionLocate+":");
 
