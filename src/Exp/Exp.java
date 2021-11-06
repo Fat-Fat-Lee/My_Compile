@@ -85,9 +85,9 @@ public class Exp {
             return result + " = icmp ne i32 " + arg1_ + "," + arg2_ + "\n";
 
         else if(op.equals("And"))
-            return result+" = and "+arg1_+","+arg2_+"\n";
+            return result+" = and i32 "+arg1_+","+arg2_+"\n";
         else if(op.equals("Or"))
-            return result+" = or "+arg1_+","+arg2_+"\n";
+            return result+" = or i32 "+arg1_+","+arg2_+"\n";
 
         return "";
     }

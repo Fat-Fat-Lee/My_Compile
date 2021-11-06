@@ -402,8 +402,8 @@ public class Parser {
                     {
                         String mainLocate=analysis.generStoreLocate();
                         int intMainLocate=analysis.storeNum-1;
-                        resllList.add(mainLocate+":\n");
-                        System.out.println(mainLocate+":");
+                        resllList.add(intMainLocate+":\n");
+                        System.out.println(intMainLocate+":\n");
                         MainBlock mainBlock=new MainBlock("main",mainLocate);
                         BlockList.blockList.add(mainBlock);
                     }

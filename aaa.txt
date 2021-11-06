@@ -1,39 +1,13 @@
 int main() {
-    int a=10;
-    int b=5;
-    int c=3;
-    int d=0;
-    if(c<a<b)
-    {
-    	d=1;
-    	if(b<=5)
-    	{
-    		d=2;
-    		if(c<3)
-    		{
-    			d=3;
-    		}
-    		//d=4;
-    		else if(c==3)
-    		{
-    			d=5;
-    		}
-    		else
-    		{
-    			d=6;
-    		}
-    		d=7;
-    	}
-    //	d=8;
-    	else{
-    	d=9;
-    	}
-    	return d;
+    int a    = 1;
+    int b    = 0;
+    int c    = 1;
+    int d    = 2;
+    int e    = 4;
+    int flag = 0;
+    if (a * b / c == e + d && a * (a + b) + c <= d + e || a - (b * c) == d - a / c) {
+        flag = 1;
     }
-  else
-  	{
-  		d=11;
-  		return d;
-	  }
-	  return d;
+    
+    return flag;
 }

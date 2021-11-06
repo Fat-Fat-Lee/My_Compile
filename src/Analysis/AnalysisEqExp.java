@@ -445,10 +445,10 @@ public class AnalysisEqExp {
                     tmpExp=tmpAnalysis.generStoreExp(tmp,arg1,arg2,"LAndExp");
                     System.out.println(tmpExp.generExpll());
                     resllList.add(tmpExp.generExpll());
-
+                    llStack.push(tmpExp.result);
                     //把比较大小式子结果转化为i32，加入resllList
-                    String newResult=Exp.generZextll(tmpExp.result,resllList);
-                    llStack.push(newResult);
+//                    String newResult=Exp.generZextll(tmpExp.result,resllList);
+//                    llStack.push(newResult);
                 }
 
 
