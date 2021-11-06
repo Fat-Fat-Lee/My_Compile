@@ -325,7 +325,8 @@ public class Parser {
 
             String condLocate=analysis.generStoreLocate();
             int intCondLocate=analysis.storeNum-1;
-            resllList.add("\n");
+            if(type.equals("if")&&(resLexerIndex-1>=0)&&!resLexerList.get(resLexerIndex-1).startsWith("ret"))
+                resllList.add("br label "+condLocate+"\n");
             int brInIndex=resllList.size()-1;
             System.out.println("\n");
             resllList.add(intCondLocate+":\n");
@@ -348,19 +349,25 @@ public class Parser {
                 {
                     getSym(resLexerList);
 
-                    //动作块生成
+                    IfBlock tmpIfBlock=new IfBlock();
+                    BlockList.blockList.add(tmpIfBlock);
+
+                    //动作块生成, 动作块跳转语句生成，生成条件块,加入块队列
                     resllList.add(intActionLocate+":\n");
                     System.out.println(intActionLocate+":");
 
                     stmtParser(tmpLexer,resLexerList,resllList);
 //                    String actionBrLocate=analysis.generStoreLocate();
-                    resllList.add("br label %x \n");
+                    if(resllList.get(resllList.size()-1).startsWith("ret"))
+                        resllList.add("don't br\n");
+                    else
+                        resllList.add("br label %x \n");
                     int brActionIndex=resllList.size()-1;
-                    //动作块跳转语句生成，生成条件块,加入块队列
-                    IfBlock tmpIfBlock=new IfBlock(type,condLocate,actionLocate,condJudgeLocate,brCondIndex,brActionIndex);
+
+                    tmpIfBlock.setIfBlock_(type,condLocate,actionLocate,condJudgeLocate,brCondIndex,brActionIndex);
                     if(type.equals("if"))
                         tmpIfBlock.brInIndex=brInIndex;
-                    BlockList.blockList.add(tmpIfBlock);
+                   // BlockList.blockList.add(tmpIfBlock);
 
                     if(tmpSym.equals("Else"))
                     {
@@ -369,6 +376,8 @@ public class Parser {
                         //准备生成else块
                         if(!tmpSym.equals("If"))
                         {
+                            IfBlock elseBlock=new IfBlock();
+                            BlockList.blockList.add(elseBlock);
                             //else动作块生成
                             String elseActionLocate=analysis.generStoreLocate();
                             int elseIntActionLocate=analysis.storeNum-1;
@@ -376,20 +385,29 @@ public class Parser {
                             System.out.println(elseIntActionLocate+":");
 
                             stmtParser(tmpLexer,resLexerList,resllList);
-                            resllList.add("br label %x\n");
+                            if(resllList.get(resllList.size()-1).startsWith("ret"))
+                                resllList.add("don't br\n");
+                            else
+                                resllList.add("br label %x \n");
                             System.out.println("br label %x\n");
+
                             int elsebrActionIndex=resllList.size()-1;
-                            IfBlock elseBlock=new IfBlock("else",elseActionLocate,elsebrActionIndex);
-                            BlockList.blockList.add(elseBlock);
+                            elseBlock.setIfBlock("else",elseActionLocate,elsebrActionIndex);
                             //动作块跳转语句生成,并生成else块
 
                             if(!tmpSym.equals("If"))
                             {
+                                //System.out.println(""+tmpSym);
+                                //留下一行，方便上一个普通块跳转到这里
+                                resllList.add("\n");
+                                int mainLastBrIndex=resllList.size()-1;
+
                                 String mainLocate=analysis.generStoreLocate();
                                 int intMainLocate=analysis.storeNum-1;
                                 resllList.add(intMainLocate+":\n");
                                 System.out.println(intMainLocate+":");
                                 MainBlock mainBlock=new MainBlock("main",mainLocate);
+                                mainBlock.mainLastBrIndex=mainLastBrIndex;//方便上一个普通块进行跳转
                                 BlockList.blockList.add(mainBlock);
                             }
                         }
@@ -400,11 +418,16 @@ public class Parser {
                     //若后面不再是条件语句，帮忙生成块声明
                     else
                     {
+                        //留下一行，方便上一个普通块跳转到这里
+                        resllList.add("\n");
+                        int mainLastBrIndex=resllList.size()-1;
+
                         String mainLocate=analysis.generStoreLocate();
                         int intMainLocate=analysis.storeNum-1;
                         resllList.add(intMainLocate+":\n");
                         System.out.println(intMainLocate+":\n");
                         MainBlock mainBlock=new MainBlock("main",mainLocate);
+                        mainBlock.mainLastBrIndex=mainLastBrIndex;//方便上一个普通块进行跳转
                         BlockList.blockList.add(mainBlock);
                     }
                 }

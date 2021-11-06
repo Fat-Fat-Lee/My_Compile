@@ -22,10 +22,10 @@ public class BlockList {
                 resllList.add("ret i32 0\n");
             }
         }
-//        for(int i=0;i<blockList.size();i++)
-//        {
-//            System.out.println(blockList.get(i).type);
-//        }
+        for(int i=0;i<blockList.size();i++)
+        {
+            System.out.println(blockList.get(i).type);
+        }
         for(int i=0;i<blockList.size();i++)
         {
             Block tmpBlock=blockList.get(i);
@@ -48,21 +48,27 @@ public class BlockList {
                 //动作跳转，跳去下一个if块，或者最近的main块
                 for(int j=i;j<blockList.size();j++)
                 {
-                    Block tmpFindBlock=blockList.get(j);
-                    if(tmpFindBlock.type.equals("main"))
-                    {
-                        tag=1;
-                        ((IfBlock)tmpBlock).actionBrLocate=((MainBlock)tmpFindBlock).mainLocate;
-                        resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
-                        break;
-                    }
-                    else if(tmpFindBlock.type.equals("if")&&j==i+1)
-                    {
-                        tag=1;
-                        ((IfBlock)tmpBlock).actionBrLocate=((IfBlock)tmpFindBlock).condLocate;
-                        resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
-                        break;
-                    }
+                    if(resllList.get(((IfBlock)tmpBlock).brActionIndex).startsWith("don't"))
+                        resllList.set(((IfBlock)tmpBlock).brActionIndex,"\n");
+                    else
+                        {
+                            Block tmpFindBlock=blockList.get(j);
+                            if(tmpFindBlock.type.equals("main"))
+                            {
+                                tag=1;
+                                ((IfBlock)tmpBlock).actionBrLocate=((MainBlock)tmpFindBlock).mainLocate;
+                                resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
+                                break;
+                            }
+                        }
+
+//                    else if(tmpFindBlock.type.equals("if")&&j==i+1)
+//                    {
+//                        tag=1;
+//                        ((IfBlock)tmpBlock).actionBrLocate=((IfBlock)tmpFindBlock).condLocate;
+//                        resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
+//                        break;
+//                    }
                 }
                 if(tag==0)
                 {
@@ -72,30 +78,39 @@ public class BlockList {
             }
             else if(tmpBlock.type.equals("else"))
             {//动作块，跳去最近的main块或者下一个if块
-                int tag=0;
-                for(int j=i;j<blockList.size();j++)
+                if(resllList.get(((IfBlock)tmpBlock).brActionIndex).startsWith("don't"))
+                    resllList.set(((IfBlock)tmpBlock).brActionIndex,"\n");
+                else
                 {
-                    Block tmpFindBlock=blockList.get(j);
-                    if(tmpFindBlock.type.equals("main"))
+                    int tag=0;
+                    for(int j=i;j<blockList.size();j++)
                     {
-                        tag=1;
-                        ((IfBlock)tmpBlock).actionBrLocate=((MainBlock)tmpFindBlock).mainLocate;
-                        resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
-                        break;
+                        Block tmpFindBlock=blockList.get(j);
+                        if(tmpFindBlock.type.equals("main"))
+                        {
+                            tag=1;
+                            ((IfBlock)tmpBlock).actionBrLocate=((MainBlock)tmpFindBlock).mainLocate;
+                            resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
+                            break;
+                        }
+//                    else if(tmpFindBlock.type.equals("if")&&j==i+1)
+//                    {
+//                        tag=1;
+//                        ((IfBlock)tmpBlock).actionBrLocate=((IfBlock)tmpFindBlock).condLocate;
+//                        if(resllList.get(((IfBlock)tmpBlock).brActionIndex).startsWith("don't"))
+//                            resllList.set(((IfBlock)tmpBlock).brActionIndex,"\n");
+//                        else
+//                            resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
+//                        break;
+//                    }
                     }
-                    else if(tmpFindBlock.type.equals("if")&&j==i+1)
+                    if(tag==0)
                     {
-                        tag=1;
-                        ((IfBlock)tmpBlock).actionBrLocate=((IfBlock)tmpFindBlock).condLocate;
-                        resllList.set(((IfBlock)tmpBlock).brActionIndex,((IfBlock) tmpBlock).setActionll());
-                        break;
+                        System.out.println("程序没有返回值");
+                        System.exit(3);
                     }
                 }
-                if(tag==0)
-                {
-                    System.out.println("程序没有返回值");
-                    System.exit(3);
-                }
+
             }
             else if(tmpBlock.type.equals("main"))
             {//动作块，跳去最近的main块或者下一个if块
@@ -105,21 +120,27 @@ public class BlockList {
                     Block tmpFindBlock=blockList.get(j);
                     if(tmpFindBlock.type.equals("elif")||tmpFindBlock.type.equals("else"))
                     {
+                        System.out.println(((MainBlock)tmpBlock).mainLocate);
                         System.out.println("希望上面的else或者else if修改为if");
                         System.exit(3);
                     }
-                    else if(tmpFindBlock.type.equals("if"))
-                    {
-                        resllList.set(((IfBlock)tmpFindBlock).brInIndex,"br label "+((IfBlock)tmpFindBlock).condLocate+"\n");
-                    }
+//                    else if(tmpFindBlock.type.equals("if"))
+//                    {
+////                        resllList.set(((IfBlock)tmpFindBlock).brInIndex,"br label "+((IfBlock)tmpFindBlock).condLocate+"\n");
+//                    }
                     else if(tmpFindBlock.type.equals("main"))
                     {
-                        resllList.set(((IfBlock)tmpFindBlock).brInIndex,"br label "+((MainBlock)tmpFindBlock).mainLocate+"\n");
+                        resllList.set(((MainBlock)tmpFindBlock).mainLastBrIndex-1,"br label "+((MainBlock)tmpFindBlock).mainLocate+"\n");
                     }
                 }
             }
             else
                 System.exit(3);
+        }
+        for(int i=0;i<resllList.size();i++)
+        {
+            if(resllList.get(i).startsWith("ret")&&i+1<resllList.size()&&resllList.get(i+1).startsWith("br"))
+                resllList.set(i+1,"\n");
         }
     }
 }

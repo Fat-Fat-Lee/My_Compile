@@ -38,5 +38,18 @@ public class IfBlock extends Block{
     public String setActionll(){
         return "br label "+actionBrLocate+"\n";
     }
+    public void setIfBlock(String type, String actionLocate, int brActionIndex) {
+        this.type = type;
+        this.actionLocate = actionLocate;
+        this.brActionIndex = brActionIndex;
+    }
+    public void setIfBlock_(String type, String condLocate, String actionLocate, String condJudgeLocate, int brCondIndex, int brActionIndex) {
+        this.type = type;
+        this.condLocate = condLocate;
+        this.actionLocate = actionLocate;
+        this.condJudgeLocate = condJudgeLocate;
+        this.brCondIndex = brCondIndex;
+        this.brActionIndex = brActionIndex;
+    }
 
 }

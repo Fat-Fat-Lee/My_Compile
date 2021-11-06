@@ -111,9 +111,9 @@ public class AnalysisEqExp {
                 }
             }
         }
-        System.out.println("----------------表达式来啦！！---------------");
-        for(String tmp:expAnalysisList)
-            System.out.println(tmp);
+//        System.out.println("----------------表达式来啦！！---------------");
+//        for(String tmp:expAnalysisList)
+//            System.out.println(tmp);
         return;
     }
     public void generAfterStack(Lexer tmpLexer, List<String> expAnalysisList,List<String> resllList)
