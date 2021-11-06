@@ -74,6 +74,7 @@ public class AnalysisEqExp {
             }
 
         }
+
         //处理单个非
         for(int i=0;i<expAnalysisList.size();i++)
         {
@@ -81,7 +82,7 @@ public class AnalysisEqExp {
             //System.out.println(tmp0);
             if(tmp0.equals("Oppose"))
             {
-                expAnalysisList.add(i,"LPar");
+                expAnalysisList.set(i,"LPar");
                 expAnalysisList.add(i+2,"Eq");
                 expAnalysisList.add(i+3,"Number(0)");
                 expAnalysisList.add(i+4,"RPar");
@@ -110,8 +111,9 @@ public class AnalysisEqExp {
                 }
             }
         }
-//        for(String tmp:expAnalysisList)
-//            System.out.println(tmp);
+        System.out.println("----------------表达式来啦！！---------------");
+        for(String tmp:expAnalysisList)
+            System.out.println(tmp);
         return;
     }
     public void generAfterStack(Lexer tmpLexer, List<String> expAnalysisList,List<String> resllList)
