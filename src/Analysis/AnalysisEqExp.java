@@ -85,6 +85,7 @@ public class AnalysisEqExp {
                 expAnalysisList.add(i+2,"Eq");
                 expAnalysisList.add(i+3,"Number(0)");
                 expAnalysisList.add(i+4,"RPar");
+                i++;
             }
         }
         //处理单个+。-

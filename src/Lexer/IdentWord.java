@@ -72,10 +72,9 @@ public class IdentWord {
     //非const变量赋值函数
     public static IdentWord generAssignNormal(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
     {
-        if(resString.startsWith("Number")) {
-            resString = resString.substring(7, resString.length() - 1);
+        if(!resString.startsWith("i32"))
             resString="i32 "+resString;
-        }
+
         String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
         if(tmpLexer.identer(tmpNormalName)==null) {
             System.out.println("该变量未声明过，无法赋值！！！");
@@ -102,10 +101,8 @@ public class IdentWord {
     //const变量赋值函数
     public static IdentWord generAssignConst(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
     {
-        if(resString.startsWith("Number")) {
-            resString = resString.substring(7, resString.length() - 1);
+        if(!resString.startsWith("i32"))
             resString="i32 "+resString;
-        }
         String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
         if(tmpLexer.identer(tmpNormalName)==null) {
             System.out.println("该变量未声明过，无法赋值！！！");

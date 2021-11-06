@@ -69,6 +69,8 @@ public class Exp {
             return result+" = mul i32 "+arg1_+","+arg2_+"\n";
         else if(op.equals("Div"))
             return result+" = sdiv i32 "+arg1_+","+arg2_+"\n";
+        else if(op.equals("Percent"))
+            return result+" = srem i32 "+arg1_+","+arg2_+"\n";
 
         else if(op.equals("Lt"))
             return result+" = icmp slt i32 "+arg1_+","+arg2_+"\n";
