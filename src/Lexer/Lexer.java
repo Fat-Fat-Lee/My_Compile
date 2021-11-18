@@ -65,7 +65,7 @@ public class Lexer {
         while(Character.isWhitespace(fileChar[this.ptr]))
         {this.ptr++;}
         if(this.ptr>=fileLength)
-           ifContinue=false;
+            ifContinue=false;
     }
 
     //清空token字符串
@@ -117,10 +117,10 @@ public class Lexer {
     //查找当前块能否声明此变量
     public IdentWord identerBlock(String tmpTokenString){
         for(IdentWord tmp:identWordList)
-            {
-                if(tmpTokenString.equals(tmp.wordName)&&tmp.belongBlock==Parser.blockStack.get(Parser.blockStack.size()-1))
-                    return tmp;
-            }
+        {
+            if(tmpTokenString.equals(tmp.wordName)&&tmp.belongBlock==Parser.blockStack.get(Parser.blockStack.size()-1))
+                return tmp;
+        }
 
 
         return null;
@@ -156,7 +156,7 @@ public class Lexer {
 //            this.identWordList.add(tmpIdentWord);
 //            return tmpIdentWord.wordSymbol;
 
-          return "Ident("+tmpTokenString+")";//标识符建立到语法分析进行
+            return "Ident("+tmpTokenString+")";//标识符建立到语法分析进行
         }
         else if(Character.isDigit(fileChar[this.ptr]))
         {
@@ -216,7 +216,7 @@ public class Lexer {
         }
         else if(fileChar[this.ptr]=='(')
         {
-           // this.getChar(fileChar);
+            // this.getChar(fileChar);
             return "LPar";
         }
         else if(fileChar[this.ptr]==')')
@@ -251,7 +251,7 @@ public class Lexer {
         }
         else if(fileChar[this.ptr]=='/')
         {
-           // this.getChar(fileChar);
+            // this.getChar(fileChar);
             return "Div";
         }
         else if(fileChar[this.ptr]=='%')
@@ -261,7 +261,7 @@ public class Lexer {
         }
         else if(fileChar[this.ptr]=='<')
         {
-           // this.getChar(fileChar);
+            // this.getChar(fileChar);
             if(fileChar[this.ptr+1]=='=')
             {
                 this.getChar(fileChar);
@@ -271,7 +271,7 @@ public class Lexer {
         }
         else if(fileChar[this.ptr]=='>')
         {
-           // this.getChar(fileChar);
+            // this.getChar(fileChar);
             if(fileChar[this.ptr+1]=='=')
             {
                 this.getChar(fileChar);
@@ -334,7 +334,7 @@ public class Lexer {
                 continue;
             else if(res.equals("Err"))
             {
-               // System.out.println(res);
+                // System.out.println(res);
                 System.exit(1);
             }
             else if(res.equals("END"))

@@ -1,6 +1,7 @@
 package Lexer;
 
 import Analysis.analysis;
+import Parser.Parser;
 import Var.NumFunction;
 import Var.NumNormal;
 import Var.NumVar;
@@ -10,7 +11,7 @@ import java.util.List;
 public class IdentWord {
     public String wordName;
     public String wordSymbol;
-   // public String wordValue;
+    // public String wordValue;
     public String wordType;//numNormal是数字，numGroup是数组，numFunction是函数
     public boolean ifConst=false;//是否为固定标识符，只能赋值一次
     public NumVar wordNumVar;//根据类型进行标识符存储
@@ -64,11 +65,20 @@ public class IdentWord {
         tmp.wordType="numNormal";
         tmp.ifConst=ifConst;
         tmp.belongBlock=belongBlock;
-        tmp.wordNumVar=NumNormal.identNumNormal();//指定存储位置
-        tmpLexer.identWordList.add(tmp);
-        resllList.add(((NumNormal)tmp.wordNumVar).locate+"=alloca i32\n");//生成声明语句
+        if(!Parser.global)
+            tmp.wordNumVar=NumNormal.identNumNormal();//指定存储位置
+        else
+            tmp.wordNumVar=NumNormal.identNumGlobalNormal(tmp.wordName);//指定全局变量存储位置
 
-        System.out.println(((NumNormal)tmp.wordNumVar).locate+"=alloca i32");//打印一下
+
+        tmpLexer.identWordList.add(tmp);
+
+        if(!Parser.global)
+        {
+            resllList.add(((NumNormal)tmp.wordNumVar).locate+"=alloca i32\n");//生成声明语句
+            System.out.println(((NumNormal)tmp.wordNumVar).locate+"=alloca i32");//打印一下
+        }
+
         return tmp;
     }
     //非const变量赋值函数
@@ -100,6 +110,43 @@ public class IdentWord {
         System.out.println("store "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//打印一下
         return tmp;
     }
+
+    //非const global变量赋值函数
+    public static IdentWord generAssignNormalGlobal(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
+    {
+        if(!resString.startsWith("i32"))
+            resString="i32 "+resString;
+
+        String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
+        if(tmpLexer.identer(tmpNormalName)==null) {
+            System.out.println("该变量未声明过，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        //该变量没有被声明过，加入
+        IdentWord tmp=tmpLexer.identer(tmpNormalName);
+        if(tmp.ifConst==true)
+        {
+            System.out.println("该变量为const变量，无法二次赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        if(tmp.wordType.equals("numFunction"))
+        {
+            System.out.println("该变量为函数变量，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+
+        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//生成赋值语句
+
+        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//打印一下
+        return tmp;
+    }
+
+
+
+
+
+
+
     //const变量赋值函数
     public static IdentWord generAssignConst(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
     {
@@ -123,6 +170,35 @@ public class IdentWord {
         System.out.println("store "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//打印一下
         return tmp;
     }
+
+    //const  global变量赋值函数
+    public static IdentWord generAssignConstGlobal(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
+    {
+        if(!resString.startsWith("i32"))
+            resString="i32 "+resString;
+        String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
+        if(tmpLexer.identer(tmpNormalName)==null) {
+            System.out.println("该变量未声明过，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        //该变量没有被声明过，加入
+        IdentWord tmp=tmpLexer.identer(tmpNormalName);
+        if(tmp.wordType.equals("numFunction"))
+        {
+            System.out.println("该变量为函数变量，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+
+        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//生成赋值语句
+
+        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//打印一下
+        return tmp;
+    }
+
+
+
+
+
     //变量加载函数
     public static String generLoadNormal(Lexer tmpLexer, List<String> resllList,String functionSymbol)
     {

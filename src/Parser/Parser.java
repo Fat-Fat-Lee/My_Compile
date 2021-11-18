@@ -21,6 +21,7 @@ public class Parser {
     public String tmpNum;
     public static List<Integer> blockStack=new Stack<>();//块号识别栈
     public static Integer allocaBlock=0;
+    public static boolean global=false;
 
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         getSym(resLexerList);
@@ -31,12 +32,16 @@ public class Parser {
     }
 
     public void compUnitParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-          System.out.println("IN compunit");
+        System.out.println("IN compunit");
 //        分配块号，语句结束回收块号
         Parser.blockStack.add(Parser.allocaBlock++);
         while(tmpSym.equals("Const")||((tmpSym.equals("Int"))&&resLexerIndex<resLexerList.size()&&
-        !resLexerList.get(resLexerIndex).equals("Ident(main)")))
+                !resLexerList.get(resLexerIndex).equals("Ident(main)")))
+        {
+            global=true;
             declParser(tmpLexer,resLexerList,resllList);
+        }
+           global=false;
 
         funcDefParser(tmpLexer,resLexerList,resllList);
 
@@ -69,7 +74,7 @@ public class Parser {
 
 
 
-//-------------------------------------声明语句----------------------------------------------
+    //-------------------------------------声明语句----------------------------------------------
     public void declParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN compunit");
         if(tmpSym.equals("Const"))
@@ -82,7 +87,7 @@ public class Parser {
         System.out.println("delParser");
     }
     public void constDeclParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-          System.out.println("IN constDecl");
+        System.out.println("IN constDecl");
         if(tmpSym.equals("Const"))
         {
             getSym(resLexerList);
@@ -104,13 +109,13 @@ public class Parser {
         System.out.println("constDeclParser");
     }
     public void bTypeParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-          System.out.println("IN bType");
+        System.out.println("IN bType");
         if(tmpSym.equals("Int"))
             getSym(resLexerList);
         System.out.println("bType");
     }
     public void constDefParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-         System.out.println("IN constDef");
+        System.out.println("IN constDef");
         if(tmpSym.startsWith("Ident"))
         {
             String varSym=tmpSym;//记录变量名，方便一会赋值
@@ -118,13 +123,25 @@ public class Parser {
             if(tmpSym.equals("Assign"))
             {
                 getSym(resLexerList);
-                //语义动作alloca，并检查是否已声明
-                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true,
-                        Parser.blockStack.get(Parser.blockStack.size()-1));
+                if(!global)
+                {
+                    //语义动作alloca，并检查是否已声明
+                    IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true,
+                            Parser.blockStack.get(Parser.blockStack.size()-1));
 
-                String resString=constInitValParser(tmpLexer,resLexerList,resllList);
-                //进行赋值
-                IdentWord.generAssignConst(tmpLexer,resllList,varSym,resString);
+                    String resString=constInitValParser(tmpLexer,resLexerList,resllList);
+                    //进行赋值
+                    IdentWord.generAssignConst(tmpLexer,resllList,varSym,resString);
+                }
+                else{
+                    //语义动作alloca，并检查是否已声明
+                    IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true,
+                            Parser.blockStack.get(Parser.blockStack.size()-1));
+
+                    String resString=constInitValParser(tmpLexer,resLexerList,resllList);
+                    //进行赋值
+                    IdentWord.generAssignConstGlobal(tmpLexer,resllList,varSym,resString);
+                }
 
             }
             else
@@ -177,31 +194,64 @@ public class Parser {
             System.exit(3);
         System.out.println("varDecl");
     }
+
     public void varDefParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN varDef");
         if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("Assign"))
         {
-            //generNormal中生成声明语句
-            String varSym=tmpSym;
-            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false,
-                    Parser.blockStack.get(Parser.blockStack.size()-1));
+            if(!global)
+            {
+                //generNormal中生成声明语句
+                String varSym=tmpSym;
+                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false,
+                        Parser.blockStack.get(Parser.blockStack.size()-1));
 
-            getSym(resLexerList);
+                getSym(resLexerList);
 
-            //进行赋值,生成赋值声明语句
-            String resString=new String();
-            getSym(resLexerList);
-            resString=initValParser(tmpLexer,resLexerList,resllList);
-            IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
+                //进行赋值,生成赋值声明语句
+                String resString=new String();
+                getSym(resLexerList);
+                resString=initValParser(tmpLexer,resLexerList,resllList);
+                IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
+            }
+            else
+            {
+                //generNormal中生成声明语句
+                String varSym=tmpSym;
+                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false,
+                        Parser.blockStack.get(Parser.blockStack.size()-1));
+
+                getSym(resLexerList);
+
+                //进行赋值,生成赋值声明语句
+                String resString=new String();
+                getSym(resLexerList);
+                resString=initValParser(tmpLexer,resLexerList,resllList);
+                IdentWord.generAssignNormalGlobal(tmpLexer,resllList,varSym,resString);
+            }
 
         }
         else if(tmpSym.startsWith("Ident")&&!resLexerList.get(resLexerIndex).equals("Assign"))
         {
             String varSym=tmpSym;
             getSym(resLexerList);
-            //generNormal中生成声明语句
-            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
-                    Parser.blockStack.get(Parser.blockStack.size()-1));
+            if(!global)
+            {
+                //generNormal中生成声明语句
+                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
+                        Parser.blockStack.get(Parser.blockStack.size()-1));
+            }
+            else
+            {
+                //generNormal中生成声明语句
+                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
+                        Parser.blockStack.get(Parser.blockStack.size()-1));
+                //进行赋值,生成赋值声明语句
+                String resString=new String();
+                resString="i32 0";
+                IdentWord.generAssignNormalGlobal(tmpLexer,resllList,varSym,resString);
+            }
+
         }
 
         else
@@ -220,8 +270,22 @@ public class Parser {
             System.out.println(resLexerList.get(i));
         }
         System.out.println("initVal");
-        return new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+
+        if(!global)
+            return new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
         //顺利把表达式字符串数组送去变为ll编码了
+        else
+        {
+            AnalysisExp tmpAnalysisExp=new AnalysisExp();
+            String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+            if(tmpAnalysisExp.ifBian)
+            {
+                System.out.println("变量不可以赋值给全局变量！！!");
+                System.exit(3);
+            }
+            return resString;
+            //顺利把表达式字符串数组送去变为ll编码了
+        }
 
 
     }
@@ -255,11 +319,11 @@ public class Parser {
             //System.out.println(tmpSym+"kjsdlkjskjdks");
 
             if(tmpSym.equals("RBrace")) {
-              //回收块号
+                //回收块号
                 Parser.blockStack.remove(Parser.blockStack.size()-1);
 
                 getSym(resLexerList);
-               // resllList.add("}"+"\n");
+                // resllList.add("}"+"\n");
             }
             else
                 System.exit(2);
@@ -399,7 +463,7 @@ public class Parser {
                     tmpIfBlock.setIfBlock_(type,condLocate,actionLocate,condJudgeLocate,brCondIndex,brActionIndex);
                     if(type.equals("if"))
                         tmpIfBlock.brInIndex=brInIndex;
-                   // BlockList.blockList.add(tmpIfBlock);
+                    // BlockList.blockList.add(tmpIfBlock);
 
                     if(tmpSym.equals("Else"))
                     {
@@ -509,7 +573,7 @@ public class Parser {
 
     //--------------------------------------------表达式相关----------------------------------------------------
     public void expParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-          System.out.println("IN exp");
+        System.out.println("IN exp");
         addExpParser(tmpLexer,resLexerList,resllList);
         System.out.println("expParser");
     }
@@ -551,14 +615,14 @@ public class Parser {
             getSym(resLexerList);
             unaryExpParser(tmpLexer,resLexerList,resllList);
         }
-       // System.out.println(tmpSym);
+        // System.out.println(tmpSym);
         System.out.println("mulExpParser");
     }
     public void unaryExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN unaryExp");
         System.out.println(tmpSym);
         String funcSym=tmpSym;
-       if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("LPar"))
+        if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("LPar"))
         {
             getSym(resLexerList);
             getSym(resLexerList);
@@ -629,7 +693,7 @@ public class Parser {
             System.exit(2);
         System.out.println("unaryOpParser");
     }
-//--------------------------------条件表达式相关-----------------------------------
+    //--------------------------------条件表达式相关-----------------------------------
     public String condParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN cond");
 
@@ -690,7 +754,7 @@ public class Parser {
         System.out.println("relParser");
     }
 
-//------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
     public boolean getSym(List<String> resLexerList){
         if(resLexerIndex<resLexerList.size())
         {

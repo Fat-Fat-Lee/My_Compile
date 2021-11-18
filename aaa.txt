@@ -3,6 +3,6 @@ int b = a + 1;
 int main() {
     int c = b;
     int b = 8;
-   
-    return b+c;
+    putint(b + c);
+    return 0;
 }
