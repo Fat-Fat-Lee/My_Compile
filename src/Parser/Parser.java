@@ -2,6 +2,7 @@ package Parser;
 
 import Analysis.AnalysisEqExp;
 import Analysis.AnalysisExp;
+import Analysis.AnalysisValueExp;
 import Analysis.analysis;
 import Block.BlockList;
 import Block.IfBlock;
@@ -162,13 +163,30 @@ public class Parser {
             expAnalysisList.add(resLexerList.get(i));
             System.out.println(resLexerList.get(i));
         }
-        AnalysisExp tmpAnalysisExp=new AnalysisExp();
-        String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-        if(tmpAnalysisExp.ifBian)
+        String resString=new String();
+        if(!global)
         {
-            System.out.println("变量不可以赋值给常量");
-            System.exit(3);
+            AnalysisExp tmpAnalysisExp=new AnalysisExp();
+            resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+            if(tmpAnalysisExp.ifBian)
+            {
+                System.out.println("变量不可以赋值给常量");
+                System.exit(3);
+            }
         }
+        else
+        {
+            AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
+            resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+            if(tmpAnalysisExp.ifBian)
+            {
+                System.out.println("变量不可以赋值给常量");
+                System.exit(3);
+            }
+        }
+
+
+
         //顺利把表达式字符串数组送去变为ll编码了
 
         System.out.println("constInitVal");
@@ -248,7 +266,7 @@ public class Parser {
                         Parser.blockStack.get(Parser.blockStack.size()-1));
                 //进行赋值,生成赋值声明语句
                 String resString=new String();
-                resString="i32 0";
+                resString="0";
                 IdentWord.generAssignNormalGlobal(tmpLexer,resllList,varSym,resString);
             }
 
@@ -276,7 +294,7 @@ public class Parser {
         //顺利把表达式字符串数组送去变为ll编码了
         else
         {
-            AnalysisExp tmpAnalysisExp=new AnalysisExp();
+            AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
             String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
             if(tmpAnalysisExp.ifBian)
             {

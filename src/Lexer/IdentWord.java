@@ -11,7 +11,7 @@ import java.util.List;
 public class IdentWord {
     public String wordName;
     public String wordSymbol;
-    // public String wordValue;
+     public int wordValue;
     public String wordType;//numNormal是数字，numGroup是数组，numFunction是函数
     public boolean ifConst=false;//是否为固定标识符，只能赋值一次
     public NumVar wordNumVar;//根据类型进行标识符存储
@@ -114,9 +114,6 @@ public class IdentWord {
     //非const global变量赋值函数
     public static IdentWord generAssignNormalGlobal(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
     {
-        if(!resString.startsWith("i32"))
-            resString="i32 "+resString;
-
         String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
         if(tmpLexer.identer(tmpNormalName)==null) {
             System.out.println("该变量未声明过，无法赋值！！！");
@@ -134,10 +131,11 @@ public class IdentWord {
             System.out.println("该变量为函数变量，无法赋值！！！");
             System.exit(3);//该变量声明过，报错
         }
+        tmp.wordValue=Integer.parseInt(resString);
 
-        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//生成赋值语句
+        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global i32 "+resString+"\n");//生成赋值语句
 
-        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//打印一下
+        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global i32 "+resString+"\n");//打印一下
         return tmp;
     }
 
@@ -174,8 +172,6 @@ public class IdentWord {
     //const  global变量赋值函数
     public static IdentWord generAssignConstGlobal(Lexer tmpLexer, List<String> resllList,String functionSymbol,String resString)
     {
-        if(!resString.startsWith("i32"))
-            resString="i32 "+resString;
         String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
         if(tmpLexer.identer(tmpNormalName)==null) {
             System.out.println("该变量未声明过，无法赋值！！！");
@@ -188,10 +184,11 @@ public class IdentWord {
             System.out.println("该变量为函数变量，无法赋值！！！");
             System.exit(3);//该变量声明过，报错
         }
+        tmp.wordValue=Integer.parseInt(resString);
 
-        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//生成赋值语句
+        resllList.add(((NumNormal)tmp.wordNumVar).locate+"= dso_local global i32 "+resString+"\n");//生成赋值语句
 
-        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global "+resString+"\n");//打印一下
+        System.out.println(((NumNormal)tmp.wordNumVar).locate+"= dso_local global i32 "+resString+"\n");//打印一下
         return tmp;
     }
 

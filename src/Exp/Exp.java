@@ -94,4 +94,59 @@ public class Exp {
         return "";
     }
 
+    public static String generZextValuell(String arg, List<String> resllList){
+        String arg_=new String();
+        if(arg.startsWith("Number"))
+            arg_=arg.substring(7,arg.length()-1);
+        return "Number("+(int)Integer.parseInt(arg_)+")";
+
+    }
+    public String generExpValuell(){
+        String arg1_=new String();
+        String arg2_=new String();
+        if(arg1.startsWith("Number"))
+            arg1_=arg1.substring(7,arg1.length()-1);
+        else
+            arg1_=arg1;
+
+        if(arg2.startsWith("Number"))
+            arg2_=arg2.substring(7,arg2.length()-1);
+        else
+            arg2_=arg2;
+
+
+        if(op.equals("Plus"))
+            result="Number("+(Integer.parseInt(arg1_)+Integer.parseInt(arg2_))+")";
+        else if(op.equals("Minus"))
+            result="Number("+(Integer.parseInt(arg1_)-Integer.parseInt(arg2_))+")";
+
+        else if(op.equals("Mult"))
+            result="Number("+(Integer.parseInt(arg1_)*Integer.parseInt(arg2_))+")";
+        else if(op.equals("Div"))
+            result= "Number("+(Integer.parseInt(arg1_)/Integer.parseInt(arg2_))+")";
+        else if(op.equals("Percent"))
+            result= "Number("+(Integer.parseInt(arg1_)%Integer.parseInt(arg2_))+")";
+
+        else if(op.equals("Lt"))
+            result="Number("+(Integer.parseInt(arg1_)<Integer.parseInt(arg2_))+")";
+        else if(op.equals("Le"))
+            result="Number("+(Integer.parseInt(arg1_)<=Integer.parseInt(arg2_))+")";
+        else if(op.equals("Gt"))
+            result="Number("+(Integer.parseInt(arg1_)>Integer.parseInt(arg2_))+")";
+        else if(op.equals("Ge"))
+            result="Number("+(Integer.parseInt(arg1_)>=Integer.parseInt(arg2_))+")";
+
+        else if(op.equals("Eq"))
+            result="Number("+(Integer.parseInt(arg1_)==Integer.parseInt(arg2_))+")";
+        else if(op.equals("Ne"))
+            result="Number("+(Integer.parseInt(arg1_)!=Integer.parseInt(arg2_))+")";
+
+        else if(op.equals("And"))
+            result="Number("+(Integer.parseInt(arg1_)&Integer.parseInt(arg2_))+")";
+        else if(op.equals("Or"))
+            result="Number("+(Integer.parseInt(arg1_)|Integer.parseInt(arg2_))+")";
+
+        return result;
+    }
+
 }
