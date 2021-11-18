@@ -14,6 +14,7 @@ public class IdentWord {
     public String wordType;//numNormal是数字，numGroup是数组，numFunction是函数
     public boolean ifConst=false;//是否为固定标识符，只能赋值一次
     public NumVar wordNumVar;//根据类型进行标识符存储
+    public int belongBlock;
 
     //生成函数标识符,声明函数
     public static IdentWord generIdentFunction(Lexer tmpLexer,List<String> resllList,String functionSymbol,int length,String returnType)
@@ -49,10 +50,10 @@ public class IdentWord {
         return tmp;
     }
     //生成变量标识符,声明变量，该变量已定下来存储位置
-    public static IdentWord generIdentNormal(Lexer tmpLexer, List<String> resllList,String functionSymbol, boolean ifConst)
+    public static IdentWord generIdentNormal(Lexer tmpLexer, List<String> resllList,String functionSymbol, boolean ifConst,int belongBlock)
     {
         String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
-        if(tmpLexer.identer(tmpNormalName)!=null) {
+        if(tmpLexer.identerBlock(tmpNormalName)!=null) {
             System.out.println("该变量声明过");
             System.exit(3);//该变量声明过，报错
         }
@@ -62,6 +63,7 @@ public class IdentWord {
         tmp.wordSymbol=functionSymbol;
         tmp.wordType="numNormal";
         tmp.ifConst=ifConst;
+        tmp.belongBlock=belongBlock;
         tmp.wordNumVar=NumNormal.identNumNormal();//指定存储位置
         tmpLexer.identWordList.add(tmp);
         resllList.add(((NumNormal)tmp.wordNumVar).locate+"=alloca i32\n");//生成声明语句

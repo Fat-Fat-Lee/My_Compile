@@ -1,13 +1,8 @@
+const int a = 6;
+int b = a + 1;
 int main() {
-    int a;
-    a = 5;
-    int b;
-    b = 10;
-    if (a == 5) {
-        if (b == 10)
-            a = 25;
-    } else
-        a = a + 15;
+    int c = b;
+    int b = 8;
    
-    return a;
+    return b+c;
 }

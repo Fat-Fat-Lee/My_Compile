@@ -1,4 +1,6 @@
 package Lexer;
+import Parser.Parser;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,11 +103,26 @@ public class Lexer {
 
     //identer查找已保存标识符
     public IdentWord identer(String tmpTokenString){
-        for(IdentWord tmp:identWordList)
+        for(int i =Parser.blockStack.size()-1;i>=0;i--)
         {
-            if(tmpTokenString.equals(tmp.wordName))
-                return tmp;
+            for(IdentWord tmp:identWordList)
+            {
+                if(tmpTokenString.equals(tmp.wordName)&&tmp.belongBlock==Parser.blockStack.get(i))
+                    return tmp;
+            }
         }
+
+        return null;
+    }
+    //查找当前块能否声明此变量
+    public IdentWord identerBlock(String tmpTokenString){
+        for(IdentWord tmp:identWordList)
+            {
+                if(tmpTokenString.equals(tmp.wordName)&&tmp.belongBlock==Parser.blockStack.get(Parser.blockStack.size()-1))
+                    return tmp;
+            }
+
+
         return null;
     }
 
@@ -303,6 +320,7 @@ public class Lexer {
         }
         return "";
     }
+
     public void lexerMain(char[] fileChar,int fileLength,List<String> resLexerList,List<String> resllList){
         this.lexerInit(resllList);
 //        String res=this.getSym(fileChar);
@@ -330,6 +348,7 @@ public class Lexer {
             resLexerList.add(res);
 
         }
+
 
     }
 

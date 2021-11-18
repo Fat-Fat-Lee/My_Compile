@@ -15,4 +15,10 @@ public class NumNormal extends NumVar{
         tmp.numType="int";
         return tmp;
     }
+//    public static NumNormal identConstNumNormal(String wordName){
+//        NumNormal tmp=new NumNormal();
+//        tmp.locate= "@"+wordName;
+//        tmp.numType="int";
+//        return tmp;
+//    }
 }

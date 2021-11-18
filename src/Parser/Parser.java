@@ -13,11 +13,15 @@ import Var.RealFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class Parser {
     public String tmpSym;
     public int resLexerIndex=0;
     public String tmpNum;
+    public static List<Integer> blockStack=new Stack<>();//块号识别栈
+    public static Integer allocaBlock=0;
+
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         getSym(resLexerList);
         if(tmpSym.equals("END"))
@@ -27,9 +31,18 @@ public class Parser {
     }
 
     public void compUnitParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-        //  System.out.println("IN compunit");
+          System.out.println("IN compunit");
+//        分配块号，语句结束回收块号
+        Parser.blockStack.add(Parser.allocaBlock++);
+        while(tmpSym.equals("Const")||((tmpSym.equals("Int"))&&resLexerIndex<resLexerList.size()&&
+        !resLexerList.get(resLexerIndex).equals("Ident(main)")))
+            declParser(tmpLexer,resLexerList,resllList);
 
         funcDefParser(tmpLexer,resLexerList,resllList);
+
+//        //全局变量，一切结束才可以回收块号
+//        Parser.blockStack.remove(Parser.blockStack.size()-1);
+
         System.out.println("compUnit");
     }
     public void funcDefParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
@@ -106,7 +119,9 @@ public class Parser {
             {
                 getSym(resLexerList);
                 //语义动作alloca，并检查是否已声明
-                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true);
+                IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true,
+                        Parser.blockStack.get(Parser.blockStack.size()-1));
+
                 String resString=constInitValParser(tmpLexer,resLexerList,resllList);
                 //进行赋值
                 IdentWord.generAssignConst(tmpLexer,resllList,varSym,resString);
@@ -168,7 +183,9 @@ public class Parser {
         {
             //generNormal中生成声明语句
             String varSym=tmpSym;
-            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false);
+            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,tmpSym,false,
+                    Parser.blockStack.get(Parser.blockStack.size()-1));
+
             getSym(resLexerList);
 
             //进行赋值,生成赋值声明语句
@@ -183,7 +200,8 @@ public class Parser {
             String varSym=tmpSym;
             getSym(resLexerList);
             //generNormal中生成声明语句
-            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false);
+            IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
+                    Parser.blockStack.get(Parser.blockStack.size()-1));
         }
 
         else
@@ -226,12 +244,20 @@ public class Parser {
 
         if(tmpSym.equals("LBrace")){
             getSym(resLexerList);
+            //分配块号，语句结束回收块号
+            Parser.blockStack.add(Parser.allocaBlock++);
+
             while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
                     tmpSym.equals("Return")||tmpSym.equals("Const")||tmpSym.equals("Int")||
-                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.startsWith("If"))
+                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.startsWith("If")||tmpSym.startsWith("LBrace"))
                 blockItemParser(tmpLexer,resLexerList,resllList);
 
+            //System.out.println(tmpSym+"kjsdlkjskjdks");
+
             if(tmpSym.equals("RBrace")) {
+              //回收块号
+                Parser.blockStack.remove(Parser.blockStack.size()-1);
+
                 getSym(resLexerList);
                // resllList.add("}"+"\n");
             }
@@ -249,7 +275,7 @@ public class Parser {
             declParser(tmpLexer,resLexerList,resllList);
         else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppoose")||
                 tmpSym.equals("Return")|| tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||
-                tmpSym.startsWith("If"))
+                tmpSym.startsWith("If")||tmpSym.startsWith("LBrace"))
             stmtParser(tmpLexer,resLexerList,resllList);
         else
             System.exit(2);
@@ -358,7 +384,11 @@ public class Parser {
                     resllList.add(intActionLocate+":\n");
                     System.out.println(intActionLocate+":");
 
+                    //分配块号，语句结束回收块号
+                    Parser.blockStack.add(Parser.allocaBlock++);
                     stmtParser(tmpLexer,resLexerList,resllList);
+                    Parser.blockStack.remove(Parser.blockStack.size()-1);
+
 //                    String actionBrLocate=analysis.generStoreLocate();
                     if(resllList.get(resllList.size()-1).startsWith("ret"))
                         resllList.add("don't br\n");
@@ -389,7 +419,11 @@ public class Parser {
                             resllList.add(elseIntActionLocate+":\n");
                             System.out.println(elseIntActionLocate+":");
 
+                            //分配块号，语句结束回收块号
+                            Parser.blockStack.add(Parser.allocaBlock++);
                             stmtParser(tmpLexer,resLexerList,resllList);
+                            Parser.blockStack.remove(Parser.blockStack.size()-1);
+
                             if(resllList.get(resllList.size()-1).startsWith("ret"))
                                 resllList.add("don't br\n");
                             else
