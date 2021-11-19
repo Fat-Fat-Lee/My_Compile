@@ -25,6 +25,9 @@ public class Parser {
     public static boolean global=false;
     public int continueTag=0;
     public int breakTag=0;
+    public String loopJmp0;
+    public String loopJmp1;
+    public String loopJmp2;
 
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         getSym(resLexerList);
@@ -430,7 +433,19 @@ public class Parser {
                    if(tmpSym.equals("Else"))
                    {
                        String jmp3=analysis.generStoreLocate();
-                       resllList.add("br label "+jmp3+"\n");
+
+                       if(continueTag==1&&breakTag==0)
+                       {
+                           continueTag=0;
+                           resllList.add("br label "+loopJmp0+"\n");
+                       }
+                       else if(breakTag==1&&continueTag==0)
+                       {
+                           breakTag=0;
+                           resllList.add("br label "+loopJmp2+"\n");
+                       }
+                       else
+                           resllList.add("br label "+jmp3+"\n");
                        resllList.add(jmp2.substring(1)+":\n");
                        getSym(resLexerList);
 
@@ -439,15 +454,33 @@ public class Parser {
                        stmtParser(tmpLexer,resLexerList,resllList);
                        Parser.blockStack.remove(Parser.blockStack.size()-1);
 
-                       resllList.add("br label "+jmp3+"\n");
+                       if(continueTag==1&&breakTag==0)
+                       {
+                           continueTag=0;
+                           resllList.add("br label "+loopJmp0+"\n");
+                       }
+                       else if(breakTag==1&&continueTag==0)
+                       {
+                           breakTag=0;
+                           resllList.add("br label "+loopJmp2+"\n");
+                       }
+                       else
+                           resllList.add("br label "+jmp3+"\n");
                        resllList.add(jmp3.substring(1)+":\n");
                    }
                    else{
-                       if(continueTag==1)
+                       if(continueTag==1&&breakTag==0)
                        {
-
+                           continueTag=0;
+                           resllList.add("br label "+loopJmp0+"\n");
                        }
-                      resllList.add("br label "+jmp2+"\n");
+                       else if(breakTag==1&&continueTag==0)
+                       {
+                           breakTag=0;
+                           resllList.add("br label "+loopJmp2+"\n");
+                       }
+                       else
+                        resllList.add("br label "+jmp2+"\n");
                       resllList.add(jmp2.substring(1)+":\n");
 //
 //                       tmpSym=resLexerList.get(resLexerIndex-2);
@@ -469,6 +502,7 @@ public class Parser {
                getSym(resLexerList);
 
                String jmp0=analysis.generStoreLocate();
+               loopJmp0=jmp0;
                resllList.add("br label "+jmp0+"\n");
                resllList.add(jmp0.substring(1)+":\n");
                String cmp=condParser(tmpLexer,resLexerList,resllList);
@@ -476,6 +510,8 @@ public class Parser {
                {
                    String jmp1=analysis.generStoreLocate();
                    String jmp2=analysis.generStoreLocate();
+                   loopJmp1=jmp1;
+                   loopJmp2=jmp2;
                    resllList.add("br i1 "+cmp+", label "+jmp1+", label "+jmp2+"\n");
                    resllList.add(jmp1.substring(1)+":\n");
                    getSym(resLexerList);
@@ -506,7 +542,7 @@ public class Parser {
            if(tmpSym.equals("Semicolon"))
            {
                getSym(resLexerList);
-               continueTag=1;
+               breakTag=1;
            }
        }
        else if(tmpSym.equals("Continue"))
@@ -515,11 +551,9 @@ public class Parser {
            if(tmpSym.equals("Semicolon"))
            {
                 getSym(resLexerList);
-                breakTag=1;
+                continueTag=1;
            }
        }
-
-
 
 
        else if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("Assign"))

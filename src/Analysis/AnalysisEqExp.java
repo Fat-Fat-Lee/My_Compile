@@ -165,7 +165,7 @@ public class AnalysisEqExp {
                         symbolStack.push("LPar");
                         break;
                     }
-                    else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent"))
+                    else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent")||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
 
                     else {
@@ -186,7 +186,7 @@ public class AnalysisEqExp {
                         break;
                     }
                     else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent")
-                            ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus"))
+                            ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus")||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
                     else
                     {
@@ -208,7 +208,8 @@ public class AnalysisEqExp {
                     }
                     else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent")
                             ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus")||
-                            symbolTmp.equals("Lt")||symbolTmp.equals("Gt")||symbolTmp.equals("Le")||symbolTmp.equals("Ge"))
+                            symbolTmp.equals("Lt")||symbolTmp.equals("Gt")||symbolTmp.equals("Le")||symbolTmp.equals("Ge")
+                            ||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
                     else
                     {
@@ -231,7 +232,7 @@ public class AnalysisEqExp {
                     else if(symbolTmp.equals("Mult")||symbolTmp.equals("Div")||symbolTmp.equals("Percent")
                             ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus")||
                             symbolTmp.equals("Lt")||symbolTmp.equals("Gt")||symbolTmp.equals("Le")||symbolTmp.equals("Ge")||
-                            symbolTmp.equals("Eq")||symbolTmp.equals("Ne"))
+                            symbolTmp.equals("Eq")||symbolTmp.equals("Ne")||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
                     else
                     {
@@ -255,7 +256,7 @@ public class AnalysisEqExp {
                             ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus")||
                             symbolTmp.equals("Lt")||symbolTmp.equals("Gt")||symbolTmp.equals("Le")||symbolTmp.equals("Ge")||
                             symbolTmp.equals("Eq")||symbolTmp.equals("Ne")||
-                            symbolTmp.equals("And"))
+                            symbolTmp.equals("And")||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
                     else
                     {
@@ -279,7 +280,7 @@ public class AnalysisEqExp {
                             ||symbolTmp.equals("Plus")||symbolTmp.equals("Minus")||
                             symbolTmp.equals("Lt")||symbolTmp.equals("Gt")||symbolTmp.equals("Le")||symbolTmp.equals("Ge")||
                             symbolTmp.equals("Eq")||symbolTmp.equals("Ne")||
-                            symbolTmp.equals("And")||symbolTmp.equals("Or"))
+                            symbolTmp.equals("And")||symbolTmp.equals("Or")||symbolTmp.startsWith("Ident"))
                         afterStack.push(symbolTmp);
                     else
                     {
