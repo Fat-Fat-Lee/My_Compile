@@ -451,7 +451,7 @@ public class AnalysisValueExp {
                     //在这里生成函数调用ll代码
                     //RealFunction.generFunctionll(resllList,tmpLexer,tmp,params);
                     if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("int"))
-                        llStack.push("%"+(analysis.storeNum-1));//把函数结果放回栈中
+                        llStack.push("%x"+(analysis.storeNum-1));//把函数结果放回栈中
                     else//要是函数结果为空，则看栈是否空，空则没问题
                     {
                         if(!llStack.empty()||!tmpStack.empty())

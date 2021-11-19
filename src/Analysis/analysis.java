@@ -15,7 +15,7 @@ public class analysis {
     public static String generStoreLocate(){
 //        if(storeNum==1)
 //            System.out.println("-----------------------JASLKDHLASJDHJASHD-----------------------------------");
-        return "%"+storeNum++;
+        return "%x"+storeNum++;
     }
 
     //生成表达式的四元式

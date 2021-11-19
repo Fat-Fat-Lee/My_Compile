@@ -367,223 +367,149 @@ public class Parser {
 
     public void stmtParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("in stmt");
-        //若是Ident Assign就是第一个候选式
-        if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("Assign"))
-        {
-            String varSym=tmpSym;
-            lValParser(tmpLexer,resLexerList,resllList);
-            if(tmpSym.equals("Assign"))
-            {
-                getSym(resLexerList);
-                int startExp=resLexerIndex-1;
-                expParser(tmpLexer,resLexerList,resllList);
-                int endExp=resLexerIndex-2;
-                List<String>expAnalysisList=new ArrayList<>();
-                for(int i=startExp;i<=endExp;i++) {
-                    expAnalysisList.add(resLexerList.get(i));
-                    System.out.println(resLexerList.get(i));
-                }
-                String resString=new String();
-                resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-                //顺利把表达式字符串数组送去变为ll编码了
-                //生成赋值语句啦
-                IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
+       if(tmpSym.equals("LBrace"))
+           blockParser(tmpLexer,resLexerList,resllList);
+       else if(tmpSym.equals("RBrace"))
+           return;
+       else if(tmpSym.equals("Return"))
+       {
+           getSym(resLexerList);
 
-                if(tmpSym.equals("Semicolon"))
-                    getSym(resLexerList);
-                else
-                    System.exit(2);
-            }
-            else
-                System.exit(2);
-        }
-        else if(tmpSym.equals("LBrace"))
-            blockParser(tmpLexer,resLexerList,resllList);
+           int startExp=resLexerIndex-1;
+           expParser(tmpLexer,resLexerList,resllList);
+           System.out.println("JHASDKJHSDHS1");
 
-        else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
-                tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.equals("Semicolon"))
-        {
-            if(tmpSym.equals("Semicolon"))
-                getSym(resLexerList);
-            else
-            {
-                int startExp=resLexerIndex-1;
-                expParser(tmpLexer,resLexerList,resllList);
-                int endExp=resLexerIndex-2;
-                List<String>expAnalysisList=new ArrayList<>();
-                for(int i=startExp;i<=endExp;i++) {
-                    expAnalysisList.add(resLexerList.get(i));
-                    System.out.println(resLexerList.get(i));
-                }
-                new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-                //顺利把表达式字符串数组送去变为ll编码了
+           int endExp=resLexerIndex-2;
+           List<String>expAnalysisList=new ArrayList<>();
+           for(int i=startExp;i<=endExp;i++) {
+               expAnalysisList.add(resLexerList.get(i));
+               System.out.println(resLexerList.get(i));
+           }
+           String resString=new String();
+           resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+           //顺利把表达式字符串数组送去变为ll编码了
+           //接下来生成返回语句
+           resllList.add("ret "+resString+"\n");
+           System.out.println("ret "+resString+"\n");
 
-                if(tmpSym.equals("Semicolon"))
-                    getSym(resLexerList);
-                else
-                    System.exit(2);
+           if(tmpSym.equals("Semicolon"))
+               getSym(resLexerList);
+           else
+               System.exit(2);
 
-            }
-        }
-        else if(tmpSym.equals("If"))
-        {   //跳转到条件块,生成条件块声明
-            String type="if";
-            if(resLexerList.get(resLexerIndex-2).equals("Else"))
-                type="elif";
+       }
+       else if(tmpSym.equals("If"))
+       {
+           getSym(resLexerList);
+           if(tmpSym.equals("LPar"))
+           {
+               getSym(resLexerList);
+               String cmp=condParser(tmpLexer,resLexerList,resllList);
+               if(tmpSym.equals("RPar"))
+               {
+                   String jmp1=analysis.generStoreLocate();
+                   String jmp2=analysis.generStoreLocate();
+                   resllList.add("br i1 "+cmp+", label "+jmp1+", label "+jmp2+"\n");
+                   resllList.add(jmp1.substring(1)+":\n");
+                   getSym(resLexerList);
 
-            String condLocate=analysis.generStoreLocate();
-            int intCondLocate=analysis.storeNum-1;
-            if(type.equals("if")&&(resLexerIndex-1>=0)&&!resLexerList.get(resLexerIndex-1).startsWith("ret"))
-                resllList.add("br label "+condLocate+"\n");
-            int brInIndex=resllList.size()-1;
-            System.out.println("\n");
-            resllList.add(intCondLocate+":\n");
-            System.out.println(intCondLocate+":");
+                   //分配块号，语句结束回收块号
+                   Parser.blockStack.add(Parser.allocaBlock++);
+                   stmtParser(tmpLexer,resLexerList,resllList);
+                   Parser.blockStack.remove(Parser.blockStack.size()-1);
 
-            getSym(resLexerList);
-            if(tmpSym.equals("LPar"))
-            {
-                getSym(resLexerList);
-                String condJudgeLocate=condParser(tmpLexer,resLexerList,resllList);
-                String actionLocate=analysis.generStoreLocate();
-                int intActionLocate=analysis.storeNum-1;
-                resllList.add("br i1 "+condJudgeLocate+",label "+actionLocate+", label %x\n");
-                System.out.println("br i1 "+condJudgeLocate+",label "+actionLocate+", label %x\n");
-                int brCondIndex=resllList.size()-1;
+                   getSym(resLexerList);
+                   if(tmpSym.equals("Else"))
+                   {
+                       String jmp3=analysis.generStoreLocate();
+                       resllList.add("br label "+jmp3+"\n");
+                       resllList.add(jmp2.substring(1)+":\n");
+                       getSym(resLexerList);
 
-                //------------------条件部分处理完毕-----------------------
+                       //分配块号，语句结束回收块号
+                       Parser.blockStack.add(Parser.allocaBlock++);
+                       stmtParser(tmpLexer,resLexerList,resllList);
+                       Parser.blockStack.remove(Parser.blockStack.size()-1);
 
-                if(tmpSym.equals("RPar"))
-                {
-                    getSym(resLexerList);
+                       resllList.add("br label "+jmp3+"\n");
+                       resllList.add(jmp3.substring(1)+":\n");
+                   }
+                   else{
+                      resllList.add("br label "+jmp2+"\n");
+                      resllList.add(jmp2.substring(1)+":\n");
+                       tmpSym=resLexerList.get(resLexerIndex-2);
+                       resLexerIndex--;//回退一个
+                       return;
+                   }
+               }
+               else
+                   System.exit(2);
+           }
+           else
+               System.exit(2);
+       }
+       else if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("Assign"))
+       {
+           String varSym=tmpSym;
+           lValParser(tmpLexer,resLexerList,resllList);
+           if(tmpSym.equals("Assign"))
+           {
+               getSym(resLexerList);
+               int startExp=resLexerIndex-1;
+               expParser(tmpLexer,resLexerList,resllList);
 
-                    IfBlock tmpIfBlock=new IfBlock();
-                    BlockList.blockList.add(tmpIfBlock);
+               int endExp=resLexerIndex-2;
+               List<String>expAnalysisList=new ArrayList<>();
+               for(int i=startExp;i<=endExp;i++) {
+                   expAnalysisList.add(resLexerList.get(i));
+                   System.out.println(resLexerList.get(i));
+               }
+               String resString=new String();
+               resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+               //顺利把表达式字符串数组送去变为ll编码了
+               //生成赋值语句啦
+               IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
 
-                    //动作块生成, 动作块跳转语句生成，生成条件块,加入块队列
-                    resllList.add("\n");
-                    tmpIfBlock.mainLastBrIndex=resllList.size()-1;
-                    resllList.add(intActionLocate+":\n");
-                    System.out.println(intActionLocate+":");
+               if(tmpSym.equals("Semicolon"))
+                   getSym(resLexerList);
+               else
+                   System.exit(2);
+           }
+           else
+               System.exit(2);
+       }
 
-                    //分配块号，语句结束回收块号
-                    Parser.blockStack.add(Parser.allocaBlock++);
-                    stmtParser(tmpLexer,resLexerList,resllList);
-                    Parser.blockStack.remove(Parser.blockStack.size()-1);
+       else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
+               tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.equals("Semicolon"))
+       {
+           if(tmpSym.equals("Semicolon"))
+               getSym(resLexerList);
+           else
+           {
+               int startExp=resLexerIndex-1;
+               expParser(tmpLexer,resLexerList,resllList);
 
-//                    String actionBrLocate=analysis.generStoreLocate();
-                    if(resllList.get(resllList.size()-1).startsWith("ret"))
-                        resllList.add("don't br\n");
-                    else
-                        resllList.add("br label %x \n");
-                    int brActionIndex=resllList.size()-1;
+               System.out.println(tmpSym);
+               System.out.println("JHASDKJHSDHS7");
 
-                    tmpIfBlock.setIfBlock_(type,condLocate,actionLocate,condJudgeLocate,brCondIndex,brActionIndex);
-                    if(type.equals("if"))
-                        tmpIfBlock.brInIndex=brInIndex;
-                    // BlockList.blockList.add(tmpIfBlock);
+               int endExp=resLexerIndex-2;
+               List<String>expAnalysisList=new ArrayList<>();
+               for(int i=startExp;i<=endExp;i++) {
+                   expAnalysisList.add(resLexerList.get(i));
+                   System.out.println(resLexerList.get(i));
+               }
+               new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+               //顺利把表达式字符串数组送去变为ll编码了
+               if(tmpSym.equals("Semicolon"))
+                   getSym(resLexerList);
+               else
+                   System.exit(2);
 
-                    if(tmpSym.equals("Else"))
-                    {
-                        getSym(resLexerList);
+           }
+       }
 
-                        //准备生成else块
-                        if(!tmpSym.equals("If"))
-                        {
-                            IfBlock elseBlock=new IfBlock();
-                            BlockList.blockList.add(elseBlock);
-                            //else动作块生成
-                            String elseActionLocate=analysis.generStoreLocate();
-                            int elseIntActionLocate=analysis.storeNum-1;
-                            resllList.add("\n");
-                            elseBlock.mainLastBrIndex=resllList.size()-1;
-
-                            resllList.add(elseIntActionLocate+":\n");
-                            System.out.println(elseIntActionLocate+":");
-
-                            //分配块号，语句结束回收块号
-                            Parser.blockStack.add(Parser.allocaBlock++);
-                            stmtParser(tmpLexer,resLexerList,resllList);
-                            Parser.blockStack.remove(Parser.blockStack.size()-1);
-
-                            if(resllList.get(resllList.size()-1).startsWith("ret"))
-                                resllList.add("don't br\n");
-                            else
-                                resllList.add("br label %x \n");
-                            System.out.println("br label %x\n");
-
-                            int elsebrActionIndex=resllList.size()-1;
-                            elseBlock.setIfBlock("else",elseActionLocate,elsebrActionIndex);
-                            //动作块跳转语句生成,并生成else块
-
-                            if(!tmpSym.equals("If"))
-                            {
-                                //System.out.println(""+tmpSym);
-                                //留下一行，方便上一个普通块跳转到这里
-                                resllList.add("\n");
-                                int mainLastBrIndex=resllList.size()-1;
-
-                                String mainLocate=analysis.generStoreLocate();
-                                int intMainLocate=analysis.storeNum-1;
-                                resllList.add(intMainLocate+":\n");
-                                System.out.println(intMainLocate+":");
-                                MainBlock mainBlock=new MainBlock("main",mainLocate);
-                                mainBlock.mainLastBrIndex=mainLastBrIndex;//方便上一个普通块进行跳转
-                                BlockList.blockList.add(mainBlock);
-                            }
-                        }
-                        else
-                            stmtParser(tmpLexer,resLexerList,resllList);
-
-                    }
-                    //若后面不再是条件语句，帮忙生成块声明
-                    else
-                    {
-                        //留下一行，方便上一个普通块跳转到这里
-                        resllList.add("\n");
-                        int mainLastBrIndex=resllList.size()-1;
-
-                        String mainLocate=analysis.generStoreLocate();
-                        int intMainLocate=analysis.storeNum-1;
-                        resllList.add(intMainLocate+":\n");
-                        System.out.println(intMainLocate+":\n");
-                        MainBlock mainBlock=new MainBlock("main",mainLocate);
-                        mainBlock.mainLastBrIndex=mainLastBrIndex;//方便上一个普通块进行跳转
-                        BlockList.blockList.add(mainBlock);
-                    }
-                }
-                else
-                    System.exit(2);
-            }
-            else
-                System.exit(2);
-        }
-        else if(tmpSym.equals("Return"))
-        {
-            getSym(resLexerList);
-
-            int startExp=resLexerIndex-1;
-            expParser(tmpLexer,resLexerList,resllList);
-            int endExp=resLexerIndex-2;
-            List<String>expAnalysisList=new ArrayList<>();
-            for(int i=startExp;i<=endExp;i++) {
-                expAnalysisList.add(resLexerList.get(i));
-                System.out.println(resLexerList.get(i));
-            }
-            String resString=new String();
-            resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-            //顺利把表达式字符串数组送去变为ll编码了
-            //接下来生成返回语句
-            resllList.add("ret "+resString+"\n");
-            System.out.println("ret "+resString+"\n");
-
-            if(tmpSym.equals("Semicolon"))
-                getSym(resLexerList);
-            else
-                System.exit(2);
-        }
-        else
-            System.exit(2);
+       else
+           System.exit(2);
 
         System.out.println("stmt");
     }
@@ -594,6 +520,8 @@ public class Parser {
         System.out.println("IN exp");
         addExpParser(tmpLexer,resLexerList,resllList);
         System.out.println("expParser");
+
+
     }
 
     public void lValParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
@@ -638,12 +566,13 @@ public class Parser {
     }
     public void unaryExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN unaryExp");
-        System.out.println(tmpSym);
         String funcSym=tmpSym;
+
         if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("LPar"))
         {
             getSym(resLexerList);
             getSym(resLexerList);
+
             if(tmpSym.equals("RPar"))
             {//函数参数为零，直接生成
                 getSym(resLexerList);

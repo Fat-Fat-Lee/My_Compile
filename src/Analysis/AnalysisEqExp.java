@@ -373,7 +373,7 @@ public class AnalysisEqExp {
             {
                 ArrayList<String> params=new ArrayList<>();
                 RealFunction.generFunctionll(resllList,tmpLexer,retString,params);
-                retString = "i32 %"+(analysis.storeNum-1);
+                retString = "i32 %x"+(analysis.storeNum-1);
             }
             else if(retString.startsWith("Number"))
                 retString="i32 "+retString.substring(7,retString.length()-1);
@@ -474,7 +474,7 @@ public class AnalysisEqExp {
                     //在这里生成函数调用ll代码
                     RealFunction.generFunctionll(resllList,tmpLexer,tmp,params);
                     if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("int"))
-                        llStack.push("%"+(analysis.storeNum-1));//把函数结果放回栈中
+                        llStack.push("%x"+(analysis.storeNum-1));//把函数结果放回栈中
                     else//要是函数结果为空，则看栈是否空，空则没问题
                     {
                         if(!llStack.empty()||!tmpStack.empty())
@@ -497,10 +497,10 @@ public class AnalysisEqExp {
             System.out.println(tmp);
         }
         //将结果转换为i1形式
-        String arg="%"+(analysis.storeNum-1);
+        String arg="%x"+(analysis.storeNum-1);
         Exp.generI1ll(arg,resllList);
 
-        return "%"+(analysis.storeNum-1);//返回最后使用的寄存器
+        return "%x"+(analysis.storeNum-1);//返回最后使用的寄存器
     }
     public String mainAnalysisExp(Lexer tmpLexer,List<String> expAnalysisList,analysis tmpAnalysis,List<String> resllList)
     {

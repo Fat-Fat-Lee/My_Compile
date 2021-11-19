@@ -20,9 +20,9 @@ public class Lexer {
         this.reserveWordList.add(new ReserveWord("int","Int"));
         this.reserveWordList.add(new ReserveWord("if","If"));
         this.reserveWordList.add(new ReserveWord("else","Else"));
-//        this.reserveWordList.add(new ReserveWord("while","While"));
-//        this.reserveWordList.add(new ReserveWord("break","Break"));
-//        this.reserveWordList.add(new ReserveWord("continue","Continue"));
+        this.reserveWordList.add(new ReserveWord("while","While"));
+        this.reserveWordList.add(new ReserveWord("break","Break"));
+        this.reserveWordList.add(new ReserveWord("continue","Continue"));
         this.reserveWordList.add(new ReserveWord("const","Const"));
         this.reserveWordList.add(new ReserveWord("return","Return"));
 
