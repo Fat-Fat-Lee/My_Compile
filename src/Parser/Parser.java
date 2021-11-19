@@ -23,6 +23,8 @@ public class Parser {
     public static List<Integer> blockStack=new Stack<>();//块号识别栈
     public static Integer allocaBlock=0;
     public static boolean global=false;
+    public int continueTag=0;
+    public int breakTag=0;
 
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         getSym(resLexerList);
@@ -331,10 +333,10 @@ public class Parser {
 
             while(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppose")||
                     tmpSym.equals("Return")||tmpSym.equals("Const")||tmpSym.equals("Int")||
-                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.startsWith("If")||tmpSym.startsWith("LBrace"))
+                    tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||tmpSym.startsWith("If")||tmpSym.startsWith("LBrace")||
+                    tmpSym.startsWith("While")||tmpSym.startsWith("Break")|| tmpSym.startsWith("Continue"))
                 blockItemParser(tmpLexer,resLexerList,resllList);
 
-            //System.out.println(tmpSym+"kjsdlkjskjdks");
 
             if(tmpSym.equals("RBrace")) {
                 //回收块号
@@ -357,16 +359,24 @@ public class Parser {
             declParser(tmpLexer,resLexerList,resllList);
         else if(tmpSym.equals("LPar")||tmpSym.equals("Plus")||tmpSym.equals("Minus")||tmpSym.equals("Oppoose")||
                 tmpSym.equals("Return")|| tmpSym.startsWith("Ident")||tmpSym.startsWith("Number")||
-                tmpSym.startsWith("If")||tmpSym.startsWith("LBrace"))
+                tmpSym.startsWith("If")||tmpSym.startsWith("LBrace")||tmpSym.startsWith("While")||tmpSym.startsWith("Break")||
+                tmpSym.startsWith("Continue"))
+        {
             stmtParser(tmpLexer,resLexerList,resllList);
+
+        }
+
         else
             System.exit(2);
+
+
         System.out.println("blockItem");
 
     }
 
     public void stmtParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("in stmt");
+
        if(tmpSym.equals("LBrace"))
            blockParser(tmpLexer,resLexerList,resllList);
        else if(tmpSym.equals("RBrace"))
@@ -377,7 +387,6 @@ public class Parser {
 
            int startExp=resLexerIndex-1;
            expParser(tmpLexer,resLexerList,resllList);
-           System.out.println("JHASDKJHSDHS1");
 
            int endExp=resLexerIndex-2;
            List<String>expAnalysisList=new ArrayList<>();
@@ -418,7 +427,6 @@ public class Parser {
                    stmtParser(tmpLexer,resLexerList,resllList);
                    Parser.blockStack.remove(Parser.blockStack.size()-1);
 
-                   getSym(resLexerList);
                    if(tmpSym.equals("Else"))
                    {
                        String jmp3=analysis.generStoreLocate();
@@ -435,10 +443,15 @@ public class Parser {
                        resllList.add(jmp3.substring(1)+":\n");
                    }
                    else{
+                       if(continueTag==1)
+                       {
+
+                       }
                       resllList.add("br label "+jmp2+"\n");
                       resllList.add(jmp2.substring(1)+":\n");
-                       tmpSym=resLexerList.get(resLexerIndex-2);
-                       resLexerIndex--;//回退一个
+//
+//                       tmpSym=resLexerList.get(resLexerIndex-2);
+//                       resLexerIndex--;//回退一个
                        return;
                    }
                }
@@ -448,6 +461,67 @@ public class Parser {
            else
                System.exit(2);
        }
+       else if(tmpSym.equals("While"))
+       {
+           getSym(resLexerList);
+           if(tmpSym.equals("LPar"))
+           {
+               getSym(resLexerList);
+
+               String jmp0=analysis.generStoreLocate();
+               resllList.add("br label "+jmp0+"\n");
+               resllList.add(jmp0.substring(1)+":\n");
+               String cmp=condParser(tmpLexer,resLexerList,resllList);
+               if(tmpSym.equals("RPar"))
+               {
+                   String jmp1=analysis.generStoreLocate();
+                   String jmp2=analysis.generStoreLocate();
+                   resllList.add("br i1 "+cmp+", label "+jmp1+", label "+jmp2+"\n");
+                   resllList.add(jmp1.substring(1)+":\n");
+                   getSym(resLexerList);
+
+                   //分配块号，语句结束回收块号
+                   Parser.blockStack.add(Parser.allocaBlock++);
+                   stmtParser(tmpLexer,resLexerList,resllList);
+                   Parser.blockStack.remove(Parser.blockStack.size()-1);
+
+                   //为下一个块生成块head
+                   {
+                       resllList.add("br label "+jmp0+"\n");
+                       resllList.add(jmp2.substring(1)+":\n");
+//                       tmpSym=resLexerList.get(resLexerIndex-2);
+//                       resLexerIndex--;//回退一个
+                       return;
+                   }
+               }
+               else
+                   System.exit(2);
+           }
+           else
+               System.exit(2);
+       }
+       else if(tmpSym.equals("Break"))
+       {
+           getSym(resLexerList);
+           if(tmpSym.equals("Semicolon"))
+           {
+               getSym(resLexerList);
+               continueTag=1;
+           }
+       }
+       else if(tmpSym.equals("Continue"))
+       {
+           getSym(resLexerList);
+           if(tmpSym.equals("Semicolon"))
+           {
+                getSym(resLexerList);
+                breakTag=1;
+           }
+       }
+
+
+
+
        else if(tmpSym.startsWith("Ident")&&resLexerList.get(resLexerIndex).equals("Assign"))
        {
            String varSym=tmpSym;
@@ -472,8 +546,10 @@ public class Parser {
 
                if(tmpSym.equals("Semicolon"))
                    getSym(resLexerList);
+
                else
                    System.exit(2);
+
            }
            else
                System.exit(2);
@@ -488,9 +564,6 @@ public class Parser {
            {
                int startExp=resLexerIndex-1;
                expParser(tmpLexer,resLexerList,resllList);
-
-               System.out.println(tmpSym);
-               System.out.println("JHASDKJHSDHS7");
 
                int endExp=resLexerIndex-2;
                List<String>expAnalysisList=new ArrayList<>();
