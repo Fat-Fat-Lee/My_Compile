@@ -224,6 +224,16 @@ public class Lexer {
             //this.getChar(fileChar);
             return "RPar";
         }
+        else if(fileChar[this.ptr]=='[')
+        {
+            // this.getChar(fileChar);
+            return "LBracket";
+        }
+        else if(fileChar[this.ptr]==']')
+        {
+            //this.getChar(fileChar);
+            return "RBracket";
+        }
         else if(fileChar[this.ptr]=='{')
         {
             //this.getChar(fileChar);

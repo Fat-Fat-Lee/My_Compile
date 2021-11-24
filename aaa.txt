@@ -1,36 +1,15 @@
-int main() {
-    int instruction, low, high, mid, count;
-    count = getint();
-    while (count > 0) {
-        low   = getint();
-        high  = getint();
-        count = count - 1;
-        while (1) {
-            mid         = (low + high + 1) / 2;
-            instruction = getint();
-            if (instruction == 0) {
-                break;
-            } else if (instruction == 1) {
-                high = mid;
-            } else if (instruction == 2) {
-                low = mid;
-            } else {
-                putch(69);
-                putch(10);
-                continue;
-            }
+int       a[4][2] = {};
+const int b[8]    = {9, 2, 3, 4, 1, 5, 4};
+int       c[4][2] = {{1, 2}, {3, 4}, {6, 3}, {7, 8}};
+int       e[4][2] = {{6, 7}, {4, 5}, {5, 6}, {9, 10}};
 
-            if (low == high) {
-                putch(67);
-                putch(10);
-                break;
-            }
-            putint(mid);
-            putch(10);
-        }
-        putint(mid);
-        putch(10);
-        putch(10);
-    }
+int main() {
+    putint(e[2][1] + e[0][1] - e[0][0] + a[2][0]);
+    int a[4][2] = {};
+    int b[8]    = {1, 2, 3, 4, 5, 6, 7, 8};
+    int c[4][2] = {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
+    putch(10);
+    int e[4][2] = {{b[6], b[7]}, {3, 4}, {5, 6}, {7, 8}};
+    putint(e[3][1] + e[0][0] + e[0][1] + a[2][0]);
     return 0;
 }

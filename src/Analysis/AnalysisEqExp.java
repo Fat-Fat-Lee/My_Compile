@@ -4,6 +4,7 @@ import Exp.Exp;
 import Lexer.Lexer;
 import Lexer.IdentWord;
 import Var.NumFunction;
+import Var.NumGroup;
 import Var.NumNormal;
 import Var.RealFunction;
 import Analysis.analysis;
@@ -142,8 +143,67 @@ public class AnalysisEqExp {
                         else {
                             if(!tmpIdent.ifConst)
                                 ifBian=true;
-                            IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
-                            afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
+                            if(tmpIdent.wordType.equals("numGroup"))
+                            {
+                                if(((NumGroup)tmpIdent.wordNumVar).numDimen==1)
+                                {
+                                    int j;
+                                    int startIndex=i+1;
+                                    int endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp=new AnalysisExp();
+                                    String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,nextExpList,new analysis(),resllList);
+                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,1,"1",resString);
+                                    afterStack.push(ptrLocate);
+
+                                    i=endIndex;
+                                }
+                                else if(((NumGroup)tmpIdent.wordNumVar).numDimen==2)
+                                {
+                                    //行
+                                    int j;
+                                    int startIndex=i+1;
+                                    int endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList1=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList1.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp1=new AnalysisExp();
+                                    String resString1=tmpAnalysisExp1.mainAnalysisExp(tmpLexer,nextExpList1,new analysis(),resllList);
+                                    i=endIndex;
+
+                                    //列
+                                    startIndex=i+1;
+                                    endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList2=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList2.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp2=new AnalysisExp();
+                                    String resString2=tmpAnalysisExp2.mainAnalysisExp(tmpLexer,nextExpList2,new analysis(),resllList);
+
+                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,2,resString1,resString2);
+                                    afterStack.push(ptrLocate);
+
+                                    i=endIndex;
+                                }
+                                else
+                                {
+                                    System.out.println("暂时不支持更高维度数组计算");
+                                    System.exit(3);
+                                }
+                            }
+                            else
+                            {
+                                IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
+                                afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
+                            }
                         }
                     }
                     else
@@ -510,4 +570,24 @@ public class AnalysisEqExp {
         return this.generAnalysisExpll(tmpLexer,tmpAnalysis,resllList);
     }
 
+    public static int findRBracket(int startIndex,List<String> expAnalysisList)
+    {
+        Stack<String>bracketStack=new Stack<>();
+        int i=0;
+        for(i=startIndex;i<expAnalysisList.size();i++)
+        {
+            if(expAnalysisList.get(i).equals("LBracket"))
+                bracketStack.push(expAnalysisList.get(i));
+            if(expAnalysisList.get(i).equals("RBracket"))
+            {
+                if(!bracketStack.empty())
+                    bracketStack.pop();
+                if(bracketStack.empty())
+                    break;
+
+            }
+
+        }
+        return i;
+    }
 }

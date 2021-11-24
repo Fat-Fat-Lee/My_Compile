@@ -291,7 +291,6 @@ public class AnalysisValueExp {
             else if(tmpi.equals("LPar"))
             {
                 symbolStack.push("LPar");
-                // System.out.println("LPar pushing!!! ");
             }
             else if(tmpi.equals("RPar"))
             {
@@ -299,7 +298,6 @@ public class AnalysisValueExp {
                 String symbolTmp=symbolStack.peek();
                 if(symbolTmp.equals("LPar")) {
                     symbolStack.pop();
-                    // System.out.println("PPPSJDAOSIJD");
                 }
                 while(!symbolTmp.equals("LPar"))
                 {

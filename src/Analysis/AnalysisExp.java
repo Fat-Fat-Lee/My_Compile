@@ -4,6 +4,7 @@ import Exp.Exp;
 import Lexer.Lexer;
 import Lexer.IdentWord;
 import Var.NumFunction;
+import Var.NumGroup;
 import Var.NumNormal;
 import Var.RealFunction;
 import Analysis.analysis;
@@ -139,8 +140,68 @@ public class AnalysisExp {
                         else {
                             if(!tmpIdent.ifConst)
                                 ifBian=true;
-                            IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
-                            afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
+                            if(tmpIdent.wordType.equals("numGroup"))
+                            {
+                                if(((NumGroup)tmpIdent.wordNumVar).numDimen==1)
+                                {
+                                    int j;
+                                    int startIndex=i+1;
+                                    int endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp=new AnalysisExp();
+                                    String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,nextExpList,new analysis(),resllList);
+                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,1,"1",resString);
+                                    afterStack.push(ptrLocate);
+
+                                    i=endIndex;
+                                }
+                                else if(((NumGroup)tmpIdent.wordNumVar).numDimen==2)
+                                {
+                                    //行
+                                    int j;
+                                    int startIndex=i+1;
+                                    int endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList1=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList1.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp1=new AnalysisExp();
+                                    String resString1=tmpAnalysisExp1.mainAnalysisExp(tmpLexer,nextExpList1,new analysis(),resllList);
+                                    i=endIndex;
+
+                                    //列
+                                    startIndex=i+1;
+                                    endIndex=findRBracket(startIndex,expAnalysisList);
+                                    List<String>nextExpList2=new ArrayList<>();
+                                    //获得exp数组
+                                    for( j=startIndex+1;j<endIndex;j++)
+                                        nextExpList2.add(expAnalysisList.get(j));
+
+                                    AnalysisExp tmpAnalysisExp2=new AnalysisExp();
+                                    String resString2=tmpAnalysisExp2.mainAnalysisExp(tmpLexer,nextExpList2,new analysis(),resllList);
+
+                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,2,resString1,resString2);
+                                    afterStack.push(ptrLocate);
+
+                                    i=endIndex;
+                                }
+                                else
+                                {
+                                    System.out.println("暂时不支持更高维度数组计算");
+                                    System.exit(3);
+                                }
+                            }
+                            else
+                            {
+                                IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
+                                afterStack.push(((NumNormal) tmpIdent.wordNumVar).loadLocate);
+                            }
+
                         }
                     }
                     else
@@ -340,6 +401,7 @@ public class AnalysisExp {
 
                 }
             }
+
             else
                 System.exit(3);
 
@@ -367,15 +429,15 @@ public class AnalysisExp {
             // resllList.add("ret i32 "+retString.substring(7,retString.length()-1)+"\n");
             // System.out.println(resllList.get(0));
             if(retString.startsWith("%"))
-                retString="i32 "+retString;
+                retString=retString;
             else if(retString.startsWith("Ident"))
             {
                 ArrayList<String> params=new ArrayList<>();
                 RealFunction.generFunctionll(resllList,tmpLexer,retString,params);
-                retString = "i32 %x"+(analysis.storeNum-1);
+                retString = "%x"+(analysis.storeNum-1);
             }
             else if(retString.startsWith("Number"))
-                retString="i32 "+retString.substring(7,retString.length()-1);
+                retString=retString.substring(7,retString.length()-1);
 
             return retString;//若是只有一个数字，直接返回，若是变量已经转化为寄存器形式
         }
@@ -503,6 +565,27 @@ public class AnalysisExp {
         this.fixUnaryExp(expAnalysisList);
         this.generAfterStack(tmpLexer,expAnalysisList,resllList);
         return this.generAnalysisExpll(tmpLexer,tmpAnalysis,resllList);
+    }
+
+    public static int findRBracket(int startIndex,List<String> expAnalysisList)
+    {
+        Stack<String>bracketStack=new Stack<>();
+        int i=0;
+        for(i=startIndex;i<expAnalysisList.size();i++)
+        {
+            if(expAnalysisList.get(i).equals("LBracket"))
+                bracketStack.push(expAnalysisList.get(i));
+            if(expAnalysisList.get(i).equals("RBracket"))
+            {
+                if(!bracketStack.empty())
+                    bracketStack.pop();
+                if(bracketStack.empty())
+                    break;
+
+            }
+
+        }
+        return i;
     }
 
 }
