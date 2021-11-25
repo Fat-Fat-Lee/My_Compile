@@ -45,6 +45,12 @@ public class Parser {
                 resLexerList.add(i+9,"RBracket");
                 resLexerList.add(i+10,"RPar");
                 resLexerList.add(i+11,"Semicolon");
+
+                resLexerList.add(i+12,"Ident(putch)");
+                resLexerList.add(i+13,"LPar");
+                resLexerList.add(i+14,"Number(44)");
+                resLexerList.add(i+15,"RPar");
+                resLexerList.add(i+16,"Semicolon");
                 break;
             }
         }
