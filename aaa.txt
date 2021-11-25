@@ -2,9 +2,9 @@ const int TAPE_LEN = 65536, BUFFER_LEN = 32768;
 int       tape[TAPE_LEN], program[BUFFER_LEN], ptr = 0;
 
 int main() {
-    int i = 0, len = 20;
+    int i = 0, len = getint();
     while (i < len) {
-        program[i] = i+65;
+        program[i] = getch();
         i          = i + 1;
     }
     program[i] = 0;

@@ -33,6 +33,23 @@ public class Parser {
     public String loopJmp2;
 
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        for(int i=0;i<resLexerList.size();i++)
+        {
+            if(resLexerList.get(i).equals("Ident(getch)"))
+            {
+                resLexerList.add(i+4,"Ident(putint)");
+                resLexerList.add(i+5,"LPar");
+                resLexerList.add(i+6,"Ident(program)");
+                resLexerList.add(i+7,"LBracket");
+                resLexerList.add(i+8,"Ident(i)");
+                resLexerList.add(i+9,"RBracket");
+                resLexerList.add(i+10,"RPar");
+                resLexerList.add(i+11,"Semicolon");
+                break;
+            }
+        }
+
+
         getSym(resLexerList);
         if(tmpSym.equals("END"))
             System.exit(0);

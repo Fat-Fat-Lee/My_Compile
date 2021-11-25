@@ -357,9 +357,11 @@ public class Lexer {
             this.getChar(fileChar);
 
             System.out.println(res);
+
             resLexerList.add(res);
 
         }
+
 
 
     }
