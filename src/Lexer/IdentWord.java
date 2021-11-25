@@ -800,25 +800,24 @@ public class IdentWord {
             System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
             //二维数组行指针
             String rowptr=analysis.generStoreLocate();
-            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
-            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
-
-            //获取a[m][n]的指针
-            String ptr=analysis.generStoreLocate();
-            //---------计算指针部分语句--------
-            String locateMul=analysis.generStoreLocate();
-            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
-            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
-            String locateAdd=analysis.generStoreLocate();
-            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
-            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
-            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
-            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+//            //获取a[m][n]的指针
+//            String ptr=analysis.generStoreLocate();
+//            //---------计算指针部分语句--------
+//            String locateMul=analysis.generStoreLocate();
+//            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+//            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+//            String locateAdd=analysis.generStoreLocate();
+//            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+//            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+//            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+//            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
             //加载a[m][n]的数值并且存储
             String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
-            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+            resllList.add(ptrValue+"=load i32,i32* "+rowptr+"\n");
+            System.out.println(ptrValue+"=load i32,i32* "+rowptr+"\n");
 
             //返回加载出的a[n]存储位置
             return ptrValue;
@@ -838,6 +837,7 @@ public class IdentWord {
         if(numDimen==1)
         {
             int allCol=((NumGroup)tmp.wordNumVar).numCol;
+
             //获取一维数组头指针
             String headptr=analysis.generStoreLocate();
             resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
@@ -867,20 +867,20 @@ public class IdentWord {
             System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
             //二维数组行指针
             String rowptr=analysis.generStoreLocate();
-            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
-            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
 
-            //获取a[m][n]的指针
-            String ptr=analysis.generStoreLocate();
-            //---------计算指针部分语句--------
-            String locateMul=analysis.generStoreLocate();
-            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
-            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
-            String locateAdd=analysis.generStoreLocate();
-            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
-            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
-            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
-            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+//            //获取a[m][n]的指针
+//            String ptr=analysis.generStoreLocate();
+//            //---------计算指针部分语句--------
+//            String locateMul=analysis.generStoreLocate();
+//            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+//            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+//            String locateAdd=analysis.generStoreLocate();
+//            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+//            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+//            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+//            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
             //加载a[m][n]的数值并且存储
 //            String ptrValue=analysis.generStoreLocate();
@@ -888,7 +888,7 @@ public class IdentWord {
 //            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
             //返回加载出的a[n]存储位置
-            return ptr;
+            return rowptr;
         }
         else
         {

@@ -7,6 +7,7 @@ import Analysis.analysis;
 import Block.BlockList;
 import Block.IfBlock;
 import Block.MainBlock;
+import Block.WhileBlock;
 import Lexer.Lexer;
 import Lexer.IdentWord;
 import Var.NumGroup;
@@ -22,6 +23,7 @@ public class Parser {
     public int resLexerIndex=0;
     public String tmpNum;
     public static List<Integer> blockStack=new Stack<>();//块号识别栈
+    public static Stack<WhileBlock> whileBlockStack=new Stack<>();//块号识别栈
     public static Integer allocaBlock=0;
     public static boolean global=false;
     public int continueTag=0;
@@ -549,6 +551,9 @@ public class Parser {
     }
 
     public void stmtParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+
+
+
         System.out.println("in stmt");
 
        if(tmpSym.equals("LBrace"))
@@ -608,12 +613,12 @@ public class Parser {
                        if(continueTag==1&&breakTag==0)
                        {
                            continueTag=0;
-                           resllList.add("br label "+loopJmp0+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp0+"\n");
                        }
                        else if(breakTag==1&&continueTag==0)
                        {
                            breakTag=0;
-                           resllList.add("br label "+loopJmp2+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp2+"\n");
                        }
                        else
                            resllList.add("br label "+jmp3+"\n");
@@ -628,12 +633,12 @@ public class Parser {
                        if(continueTag==1&&breakTag==0)
                        {
                            continueTag=0;
-                           resllList.add("br label "+loopJmp0+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp0+"\n");
                        }
                        else if(breakTag==1&&continueTag==0)
                        {
                            breakTag=0;
-                           resllList.add("br label "+loopJmp2+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp2+"\n");
                        }
                        else
                            resllList.add("br label "+jmp3+"\n");
@@ -643,12 +648,12 @@ public class Parser {
                        if(continueTag==1&&breakTag==0)
                        {
                            continueTag=0;
-                           resllList.add("br label "+loopJmp0+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp0+"\n");
                        }
                        else if(breakTag==1&&continueTag==0)
                        {
                            breakTag=0;
-                           resllList.add("br label "+loopJmp2+"\n");
+                           resllList.add("br label "+whileBlockStack.peek().jmp2+"\n");
                        }
                        else
                         resllList.add("br label "+jmp2+"\n");
@@ -688,9 +693,13 @@ public class Parser {
                    getSym(resLexerList);
 
                    //分配块号，语句结束回收块号
+                   WhileBlock tmp=new WhileBlock(jmp0,jmp2);
+                   whileBlockStack.add(tmp);
                    Parser.blockStack.add(Parser.allocaBlock++);
                    stmtParser(tmpLexer,resLexerList,resllList);
                    Parser.blockStack.remove(Parser.blockStack.size()-1);
+                   whileBlockStack.pop();
+
 
                    //为下一个块生成块head
                    {
