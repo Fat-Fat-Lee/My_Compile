@@ -86,6 +86,7 @@ public class AnalysisExp {
                 expAnalysisList.add(i+2,"Ne");
                 expAnalysisList.add(i+3,"Number(0)");
                 expAnalysisList.add(i+4,"RPar");
+                i++;
             }
         }
         //处理单个+。-

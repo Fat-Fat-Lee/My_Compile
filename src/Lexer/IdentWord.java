@@ -942,7 +942,11 @@ public class IdentWord {
 
             AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
             String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-
+            if(tmpAnalysisExp.ifBian)
+            {
+                System.out.println("变量不可以赋值给常量");
+                System.exit(3);
+            }
             if(i==0)
                 res0=Integer.parseInt(resString);
             else if(i==1)

@@ -1,18 +1,8 @@
-int field[2];
+int a = 5;
+int b[a][4] = {};
+
 int main() {
-    int i[1];
-    int j[3];
-    int k;
-
-    field[0] = getint();
-    field[1] = getint();
-
-    j[0 + 0] = -1;
-    j[1]     = j[0] - 2;
-    k        = j[1];
-    j[2]     = 16;
-    
-    putint(j[3 - field[0]] + 2 + k);
-
+    b[0][1] = 5;
+    putint(b[0][1]);
     return 0;
 }
