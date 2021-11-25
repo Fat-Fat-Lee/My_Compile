@@ -323,16 +323,106 @@ public class Parser {
                     groupdef.add(resLexerList.get(i));
 
                 tmpNumGroup=IdentWord.caclGroupParam(tmpLexer,resllList,groupdef);
-                IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
-                        Parser.blockStack.get(Parser.blockStack.size()-1)
-                        ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
 
+                if(tmpSym.equals("Assign"))
+                {
+                    getSym(resLexerList);
+
+                    if(!tmpSym.equals("LBrace"))
+                    {
+                            System.out.println("数组声明部分不可以为元素赋值");
+                            System.exit(3);
+                        }
+                    int startExp=resLexerIndex-1;
+                    initValParser(tmpLexer,resLexerList,resllList);
+                    int endExp=resLexerIndex-2;
+                        //开始进行参数分离
+                    List<String>expAnalysisList=new ArrayList<>();
+                    for(int i=startExp;i<=endExp;i++) {
+                        expAnalysisList.add(resLexerList.get(i));
+                        System.out.println(resLexerList.get(i));
+                    }
+                    List<List<String>>resStringList=new ArrayList<>();
+                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,true,
+                            tmpNumGroup.numDimen, tmpNumGroup.numCol,tmpNumGroup.numRow,expAnalysisList);
+
+                    if(!global)
+                    {
+                        IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
+                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                            //进行赋值
+                        IdentWord.generAssignGroup(tmpLexer,resllList,varSym,resStringList,
+                                    tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                    }
+                    else {
+                        IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
+                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                            //进行赋值
+                        IdentWord.generAssignGroupGlobal(tmpLexer,resllList,varSym,resStringList,
+                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                    }
+
+
+
+                }
+                else
+                {
+                    if(!global)
+                    {
+                        IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
+                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                    }
+                    else
+                    {
+                        IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
+                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                        //进行赋值,全赋值为0
+                        IdentWord.generZeroGroupGlobal(tmpLexer,resllList,varSym,
+                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                    }
+                }
             }
             else
             {
                 if(tmpSym.equals("Assign"))
+                {
+                    getSym(resLexerList);
                     IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
-                        Parser.blockStack.get(Parser.blockStack.size()-1));
+                            Parser.blockStack.get(Parser.blockStack.size()-1));
+                    int startExp=resLexerIndex-1;
+                    initValParser(tmpLexer,resLexerList,resllList);
+                    int endExp=resLexerIndex-2;
+                    List<String>expAnalysisList=new ArrayList<>();
+                    for(int i=startExp;i<=endExp;i++) {
+                        expAnalysisList.add(resLexerList.get(i));
+                        System.out.println(resLexerList.get(i));
+                    }
+                    String resString=new String();
+                    if(!global)
+                    {
+                        AnalysisExp tmpAnalysisExp=new AnalysisExp();
+                        resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+
+                        //进行赋值
+                        IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
+                    }
+                    else{
+                        AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
+                        resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+                        if(tmpAnalysisExp.ifBian)
+                        {
+                            System.out.println("变量不可以赋值给常量");
+                            System.exit(3);
+                        }
+                        //进行赋值
+                        IdentWord.generAssignNormalGlobal(tmpLexer,resllList,varSym,resString);
+                    }
+                }
+
                 else
                 {
                     if(!global)
@@ -357,77 +447,7 @@ public class Parser {
 
 
         //------------------------------声明结束。开始赋值------------------------------
-            if(tmpSym.equals("Assign"))
-            {
-                getSym(resLexerList);
-                if(ifGroup)
-                {
-                    if(!tmpSym.equals("LBrace"))
-                    {
-                        System.out.println("数组声明部分不可以为元素赋值");
-                        System.exit(3);
-                    }
-                    int startExp=resLexerIndex-1;
-                    initValParser(tmpLexer,resLexerList,resllList);
-                    int endExp=resLexerIndex-2;
-                    //开始进行参数分离
-                    List<String>expAnalysisList=new ArrayList<>();
-                    for(int i=startExp;i<=endExp;i++) {
-                        expAnalysisList.add(resLexerList.get(i));
-                        System.out.println(resLexerList.get(i));
-                    }
-                    List<List<String>>resStringList=new ArrayList<>();
-                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,true,
-                            tmpNumGroup.numDimen, tmpNumGroup.numCol,tmpNumGroup.numRow,expAnalysisList);
 
-                    if(!global)
-                    {
-                        //进行赋值
-                        IdentWord.generAssignGroup(tmpLexer,resllList,varSym,resStringList,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
-                    }
-                    else
-                    {
-                        //进行赋值
-                        IdentWord.generAssignGroupGlobal(tmpLexer,resllList,varSym,resStringList,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
-                    }
-                }
-                else
-                {
-                    int startExp=resLexerIndex-1;
-                    initValParser(tmpLexer,resLexerList,resllList);
-                    int endExp=resLexerIndex-2;
-                    List<String>expAnalysisList=new ArrayList<>();
-                    for(int i=startExp;i<=endExp;i++) {
-                        expAnalysisList.add(resLexerList.get(i));
-                        System.out.println(resLexerList.get(i));
-                    }
-                    String resString=new String();
-                    if(!global)
-                    {
-                        AnalysisExp tmpAnalysisExp=new AnalysisExp();
-                        resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-                        //进行赋值,生成赋值声明语句
-                        IdentWord.generAssignNormal(tmpLexer,resllList,varSym,resString);
-                    }
-                    else
-                    {
-                        AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
-                        resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-                        if(tmpAnalysisExp.ifBian)
-                        {
-                            System.out.println("变量不可以赋值给全局变量");
-                            System.exit(3);
-                        }
-                        //进行赋值
-                        IdentWord.generAssignNormalGlobal(tmpLexer,resllList,varSym,resString);
-                    }
-
-
-                }
-
-            }
 
         }
         else

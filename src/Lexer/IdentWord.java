@@ -294,6 +294,89 @@ public class IdentWord {
 
         return tmp;
     }
+
+    //生成变量标识符,声明变量，该变量已定下来存储位置
+    public static IdentWord generIdentGlobalGroup(Lexer tmpLexer, List<String> resllList,String functionSymbol, boolean ifConst,int belongBlock
+            ,int numDimen,int numRow,int numCol)
+    {
+        String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
+        if(tmpLexer.identerBlock(tmpNormalName)!=null) {
+            System.out.println("该变量声明过");
+            System.exit(3);//该变量声明过，报错
+        }
+        //该变量没有被声明过，加入
+        IdentWord tmp=new IdentWord();
+        tmp.wordName=functionSymbol.substring(6,functionSymbol.length()-1);
+        tmp.wordSymbol=functionSymbol;
+        tmp.wordType="numGroup";
+        tmp.ifConst=ifConst;
+        tmp.belongBlock=belongBlock;
+        if(!Parser.global)
+            tmp.wordNumVar= NumGroup.identNumGroup();//指定存储位置
+        else
+            tmp.wordNumVar=NumGroup.identNumGroupGlobal(tmp.wordName);//指定全局变量存储位置
+
+
+        tmpLexer.identWordList.add(tmp);
+
+        if(!Parser.global)
+        {
+            //完成多维数组声明语句
+            if(numDimen==1)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=1;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+" x i32]\n");//生成声明语句
+                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+" x i32]\n");//打印一下
+                generMemsetGroup(tmpLexer, resllList,tmp, ifConst,belongBlock,numDimen,numRow,numCol);
+            }
+            else if(numDimen==2)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=2;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+" x ["+numCol+" x i32]]\n");//生成声明语句
+                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+" x ["+numCol+" x i32]]\n");//打印一下
+                generMemsetGroup(tmpLexer, resllList,tmp, ifConst,belongBlock,numDimen,numRow,numCol);
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
+
+        }
+        else
+        {
+            //完成多维数组声明语句
+            if(numDimen==1)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=1;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+
+            }
+            else if(numDimen==2)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=2;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
+
+        }
+
+        return tmp;
+    }
+
+
+
     //非const变量数组初始化赋值函数
     public static IdentWord generAssignGroup(Lexer tmpLexer, List<String> resllList,String functionSymbol,List<List<String>> resStringList
             ,int numDimen,int numRow,int numCol)
@@ -318,6 +401,30 @@ public class IdentWord {
         //生成指针寻找以及赋值语句
         groupPtrInit(tmp,resllList,resStringList,numDimen,numRow,numCol);
 
+        return tmp;
+    }
+    //非const global变量初始化赋值函数
+    public static IdentWord generZeroGroupGlobal(Lexer tmpLexer, List<String> resllList,String functionSymbol
+            ,int numDimen,int numRow,int numCol)
+    {
+        String tmpNormalName=functionSymbol.substring(6,functionSymbol.length()-1);
+        if(tmpLexer.identer(tmpNormalName)==null) {
+            System.out.println("该变量未声明过，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        //该变量没有被声明过，加入
+        IdentWord tmp=tmpLexer.identer(tmpNormalName);
+        if(tmp.ifConst==true)
+        {
+            System.out.println("该变量为const变量，无法二次赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        if(tmp.wordType.equals("numFunction"))
+        {
+            System.out.println("该变量为函数变量，无法赋值！！！");
+            System.exit(3);//该变量声明过，报错
+        }
+        groupPtrGlobalZeroInit(tmp,resllList,numDimen,numRow,numCol);
         return tmp;
     }
 
@@ -502,7 +609,7 @@ public class IdentWord {
         }
         else if(numDimen==2)
         {
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numRow+"x["+numCol+" x i32]][";
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numRow+" x ["+numCol+" x i32]][";
             int i;
             for(i=0;i<resStringList.size();i++)
             {
@@ -522,12 +629,64 @@ public class IdentWord {
             for(i=i;i<numRow;i++)
             {
                 //结束初始化一维数组寻指针以及赋值
-                resllString+="["+numCol+" x i32][zeroinitializer]";
+                resllString+="["+numCol+" x i32] zeroinitializer,";
 
             }
 
             if(resllString.endsWith(","))
+            {
                 resllString=resllString.substring(0,resllString.length()-1);
+            }
+
+            resllString+="]\n";
+            resllList.add(resllString);
+            System.out.println(resllString);
+        }
+        else
+        {
+            System.out.println("暂时不支持更高维度数组");
+            System.exit(3);
+        }
+    }
+
+    //非const全局数组全赋值为零函数
+    public static void groupPtrGlobalZeroInit(IdentWord tmp, List<String> resllList
+            ,int numDimen,int numRow,int numCol)
+    {
+        if(numDimen==1)
+        {
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numCol+" x i32][";
+            int i;
+
+            //结束初始化一维数组寻指针以及赋值
+            for(i=0;i<numCol;i++)
+                resllString+="i32 0,";
+
+            if(resllString.endsWith(","))
+            {
+                resllString=resllString.substring(0,resllString.length()-1);
+            }
+
+            resllString+="]\n";
+            resllList.add(resllString);
+            System.out.println(resllString);
+        }
+        else if(numDimen==2)
+        {
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numRow+" x ["+numCol+" x i32]][";
+
+            for(int i=0;i<numRow;i++)
+            {
+                //结束初始化一维数组寻指针以及赋值
+                resllString+="["+numCol+" x i32] zeroinitializer,";
+
+            }
+
+            if(resllString.endsWith(","))
+            {
+                resllString=resllString.substring(0,resllString.length()-1);
+            }
+
             resllString+="]\n";
             resllList.add(resllString);
             System.out.println(resllString);
@@ -567,7 +726,7 @@ public class IdentWord {
         }
         else if(numDimen==2)
         {
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local constant ["+numRow+"x["+numCol+" x i32]][";
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local constant ["+numRow+" x ["+numCol+" x i32]][";
             int i;
             for(i=0;i<resStringList.size();i++)
             {
@@ -587,7 +746,7 @@ public class IdentWord {
             for(i=i;i<numRow;i++)
             {
                 //结束初始化一维数组寻指针以及赋值
-                resllString+="["+numCol+" x i32][zeroinitializer]";
+                resllString+="["+numCol+" x i32] zeroinitializer ,";
 
             }
 
@@ -603,6 +762,8 @@ public class IdentWord {
             System.exit(3);
         }
     }
+
+
 
     //指定数组变量加载函数
     public static String groupPtrLoad(IdentWord tmp, List<String> resllList,int numDimen,String strRow,String strCol)
@@ -722,12 +883,12 @@ public class IdentWord {
             System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
             //加载a[m][n]的数值并且存储
-            String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
-            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+//            String ptrValue=analysis.generStoreLocate();
+//            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+//            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
             //返回加载出的a[n]存储位置
-            return ptrValue;
+            return ptr;
         }
         else
         {
