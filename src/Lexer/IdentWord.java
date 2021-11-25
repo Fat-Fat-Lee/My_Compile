@@ -655,19 +655,19 @@ public class IdentWord {
     {
         if(numDimen==1)
         {
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numCol+" x i32][";
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numCol+" x i32]zeroinitializer\n";
             int i;
 
             //结束初始化一维数组寻指针以及赋值
-            for(i=0;i<numCol;i++)
-                resllString+="i32 0,";
-
-            if(resllString.endsWith(","))
-            {
-                resllString=resllString.substring(0,resllString.length()-1);
-            }
-
-            resllString+="]\n";
+//            for(i=0;i<numCol;i++)
+//                resllString+="i32 0,";
+//
+//            if(resllString.endsWith(","))
+//            {
+//                resllString=resllString.substring(0,resllString.length()-1);
+//            }
+//
+//            resllString+="]\n";
             resllList.add(resllString);
             System.out.println(resllString);
         }
