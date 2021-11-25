@@ -377,7 +377,7 @@ public class Parser {
                         System.out.println(resLexerList.get(i));
                     }
                     List<List<String>>resStringList=new ArrayList<>();
-                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,false,
+                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,true,
                             tmpNumGroup.numDimen, tmpNumGroup.numCol,tmpNumGroup.numRow,expAnalysisList);
 
                     if(!global)
@@ -552,8 +552,8 @@ public class Parser {
            resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
            //顺利把表达式字符串数组送去变为ll编码了
            //接下来生成返回语句
-           resllList.add("ret i32"+resString+"\n");
-           System.out.println("ret i32"+resString+"\n");
+           resllList.add("ret i32 "+resString+"\n");
+           System.out.println("ret i32 "+resString+"\n");
 
            if(tmpSym.equals("Semicolon"))
                getSym(resLexerList);
@@ -718,16 +718,19 @@ public class Parser {
                //新加入的数组模块
                int groupParamStart=resLexerIndex;
                lValParser(tmpLexer,resLexerList,resllList);
-               int groupParamEnd=resLexerIndex-1;
+               int groupParamEnd=resLexerIndex-2;
                NumGroup tmpNumGroup=new NumGroup();
                List<String>groupdef=new ArrayList<>();
                for(int i=groupParamStart;i<=groupParamEnd;i++)
                    groupdef.add(resLexerList.get(i));
-               tmpNumGroup=IdentWord.caclGroupElemParam(tmpLexer,resllList,groupdef);
 
-               IdentWord tmp=tmpLexer.identer(varSym);
+               IdentWord tmp=tmpLexer.identer(varSym.substring(6,varSym.length()-1));
+               tmpNumGroup=IdentWord.caclGroupElemParam(tmpLexer,resllList,groupdef,((NumGroup)tmp.wordNumVar).numDimen);
+
+
                if(tmp==null)
                {
+                   System.out.println(blockStack.get(Parser.blockStack.size()-1));
                    System.out.println("变量不存在，无法进行赋值");
                    System.exit(3);
                }
@@ -741,9 +744,9 @@ public class Parser {
                    System.out.println("该变量为函数变量，无法赋值！！！");
                    System.exit(3);//该变量声明过，报错
                }
-               else if(tmp.wordType.equals("wordGroup"))
+               else if(tmp.wordType.equals("numGroup"))
                {
-                   ptrString=IdentWord.groupPtrLoad(tmp,resllList,tmpNumGroup.numDimen,tmpNumGroup.strRow,tmpNumGroup.strCol);
+                   ptrString=IdentWord.groupPtrValue(tmp,resllList,tmpNumGroup.numDimen,tmpNumGroup.strRow,tmpNumGroup.strCol);
                }
 
            }

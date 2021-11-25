@@ -31,6 +31,8 @@ public class Lexer {
         this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getch)",0,"int"));
         this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putint)",1,"void"));
         this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putch)",1,"void"));
+//        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(memset)",3,"void"));
+        resllList.add("declare void @memset(i32*, i32, i32)\n");
     }
 
 

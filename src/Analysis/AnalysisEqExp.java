@@ -104,7 +104,8 @@ public class AnalysisEqExp {
             if(tmp0.equals("Plus")||tmp0.equals("Minus"))
             {
                 String tmp=expAnalysisList.get(i-1);
-                if(!tmp.startsWith("Number")&&!tmp.equals("RPar")&&!tmp.startsWith("Ident"))
+                if(!tmp.startsWith("Number")&&!tmp.equals("RPar")&&!tmp.startsWith("Ident")
+                        &&!tmp.startsWith("LBracket")&&!tmp.startsWith("RBracket"))
                 {
                     //System.out.println("WHY!!!"+tmp);
                     expAnalysisList.add(i , "Number(0)");

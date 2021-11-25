@@ -107,9 +107,9 @@ public class IdentWord {
             System.exit(3);//该变量声明过，报错
         }
 
-        resllList.add("store i32"+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//生成赋值语句
+        resllList.add("store i32 "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//生成赋值语句
 
-        System.out.println("store i32"+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//打印一下
+        System.out.println("store i32 "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//打印一下
         return tmp;
     }
 
@@ -246,17 +246,43 @@ public class IdentWord {
             {
                 ((NumGroup)tmp.wordNumVar).numDimen=1;
                 ((NumGroup)tmp.wordNumVar).numCol=numCol;
-                ((NumGroup)tmp.wordNumVar).numCol=numRow;
-                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+"xi32] zeroinitializer\n");//生成声明语句
-                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+"xi32] zeroinitializer\n");//打印一下
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+" x i32]\n");//生成声明语句
+                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numCol+" x i32]\n");//打印一下
+                generMemsetGroup(tmpLexer, resllList,tmp, ifConst,belongBlock,numDimen,numRow,numCol);
             }
             else if(numDimen==2)
             {
                 ((NumGroup)tmp.wordNumVar).numDimen=2;
                 ((NumGroup)tmp.wordNumVar).numCol=numCol;
-                ((NumGroup)tmp.wordNumVar).numCol=numRow;
-                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+"x["+numCol+"xi32]] zeroinitializer\n");//生成声明语句
-                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+"x["+numCol+"xi32]] zeroinitializer\n");//打印一下
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+                resllList.add(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+" x ["+numCol+" x i32]]\n");//生成声明语句
+                System.out.println(((NumGroup)tmp.wordNumVar).locate+"=alloca ["+numRow+" x ["+numCol+" x i32]]\n");//打印一下
+                generMemsetGroup(tmpLexer, resllList,tmp, ifConst,belongBlock,numDimen,numRow,numCol);
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
+
+        }
+        else
+        {
+            //完成多维数组声明语句
+            if(numDimen==1)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=1;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+
+            }
+            else if(numDimen==2)
+            {
+                ((NumGroup)tmp.wordNumVar).numDimen=2;
+                ((NumGroup)tmp.wordNumVar).numCol=numCol;
+                ((NumGroup)tmp.wordNumVar).numRow=numRow;
+
             }
             else
             {
@@ -399,28 +425,30 @@ public class IdentWord {
         {
             List<String> resGroupString=resStringList.get(0);
             String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
+            resllList.add(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0\n");
+            System.out.println(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0\n");
             for(int i=0;i<resGroupString.size();i++)
             {
                 //结束初始化一维数组寻指针以及赋值
                 String ptr=analysis.generStoreLocate();
-                resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+i);
-                System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+i);
+                resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+i+"\n");
+                System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+i+"\n");
 
-                resllList.add("store i32 "+resGroupString.get(i)+", i32* "+ptr);
-                System.out.println("store i32 "+resGroupString.get(i)+", i32* "+ptr);
+                resllList.add("store i32 "+resGroupString.get(i)+", i32* "+ptr+"\n");
+                System.out.println("store i32 "+resGroupString.get(i)+", i32* "+ptr+"\n");
             }
         }
         else if(numDimen==2)
         {
             //二维数组总头指针
             String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
+            resllList.add(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
 
-            resllList.add(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0");
+            //二维数组总头指针
+            String rowptr=analysis.generStoreLocate();
+            resllList.add(rowptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+            System.out.println(rowptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
             int count=0;
             for(int j=0;j<resStringList.size();j++)
             {
@@ -429,12 +457,12 @@ public class IdentWord {
                 {
                     //结束初始化一维数组寻指针以及赋值
                     String ptr=analysis.generStoreLocate();
-                    resllList.add(ptr+"=getelementptr i32,i32* %4, i32 "+count);
-                    System.out.println(ptr+"=getelementptr i32,i32* %4, i32 "+count);
+                    resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+count+"\n");
+                    System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+count+"\n");
                     count++;
 
-                    resllList.add("store i32 "+resGroupString.get(i)+", i32* "+ptr);
-                    System.out.println("store i32 "+resGroupString.get(i)+", i32* "+ptr);
+                    resllList.add("store i32 "+resGroupString.get(i)+", i32* "+ptr+"\n");
+                    System.out.println("store i32 "+resGroupString.get(i)+", i32* "+ptr+"\n");
                 }
             }
 
@@ -452,56 +480,54 @@ public class IdentWord {
     {
         if(numDimen==1)
         {
-            //若为赋初值则全初始化为0
-            if(resStringList.size()==0)
-            {
-                String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global["+numCol+" x i32] zeroinitializer";
-                resllList.add(resllString);
-                System.out.println(resllString);
-                return;
-            }
             List<String> resGroupString=resStringList.get(0);
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global["+numCol+" x i32][";
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numCol+" x i32][";
+            int i;
+            //结束初始化一维数组寻指针以及赋值
+            for(i=0;i<resGroupString.size();i++)
+                resllString+="i32 "+resGroupString.get(i)+",";
 
-            for(int i=0;i<resGroupString.size();i++)
-            {
-                //结束初始化一维数组寻指针以及赋值
-                resllString+="i32"+resGroupString.get(i)+",";
-            }
+            //结束初始化一维数组寻指针以及赋值
+            for(i=i;i<numCol;i++)
+                resllString+="i32 0,";
+
             if(resllString.endsWith(","))
-                resllString.substring(0,resllString.length()-1);
+            {
+                resllString=resllString.substring(0,resllString.length()-1);
+            }
+
             resllString+="]\n";
             resllList.add(resllString);
             System.out.println(resllString);
         }
         else if(numDimen==2)
         {
-            if(resStringList.size()==0)
-            {
-                //若为赋初值则全初始化为0
-                String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global["+numRow+"x["+numCol+" x i32]] zeroinitializer";
-                resllList.add(resllString);
-                System.out.println(resllString);
-                return;
-            }
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global["+numRow+"x["+numCol+" x i32]][";
-
-            for(int i=0;i<resStringList.size();i++)
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global ["+numRow+"x["+numCol+" x i32]][";
+            int i;
+            for(i=0;i<resStringList.size();i++)
             {
                 List<String> resGroupString=resStringList.get(i);
                 //结束初始化一维数组寻指针以及赋值
-                resllString+="["+resGroupString.size()+"xi32][";
-                for(int j=0;j<resGroupString.size();j++)
-                {
-                    resllString+="i32"+resGroupString.get(j)+",";
-                }
+                resllString+="["+numCol+" x i32][";
+                int j;
+                for(j=0;j<resGroupString.size();j++)
+                    resllString+="i32 "+resGroupString.get(j)+",";
+                for(j=j;j<numCol;j++)
+                    resllString+="i32 0,";
+
                 if(resllString.endsWith(","))
-                    resllString.substring(0,resllString.length()-1);
-                resllString+="],\n";
+                    resllString=resllString.substring(0,resllString.length()-1);
+                resllString+="],";
+            }
+            for(i=i;i<numRow;i++)
+            {
+                //结束初始化一维数组寻指针以及赋值
+                resllString+="["+numCol+" x i32][zeroinitializer]";
+
             }
 
             if(resllString.endsWith(","))
-                resllString.substring(0,resllString.length()-1);
+                resllString=resllString.substring(0,resllString.length()-1);
             resllString+="]\n";
             resllList.add(resllString);
             System.out.println(resllString);
@@ -520,40 +546,56 @@ public class IdentWord {
         if(numDimen==1)
         {
             List<String> resGroupString=resStringList.get(0);
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local constant["+numCol+" x i32][";
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local constant ["+numCol+" x i32][";
+            int i;
+            //结束初始化一维数组寻指针以及赋值
+            for(i=0;i<resGroupString.size();i++)
+                resllString+="i32 "+resGroupString.get(i)+",";
 
-            for(int i=0;i<resGroupString.size();i++)
-            {
-                //结束初始化一维数组寻指针以及赋值
-                resllString+="i32"+resGroupString.get(i)+",";
-            }
+            //结束初始化一维数组寻指针以及赋值
+            for(i=i;i<numCol;i++)
+                resllString+="i32 0,";
+
             if(resllString.endsWith(","))
-                resllString.substring(0,resllString.length()-1);
+            {
+                resllString=resllString.substring(0,resllString.length()-1);
+            }
+
             resllString+="]\n";
             resllList.add(resllString);
+            System.out.println(resllString);
         }
         else if(numDimen==2)
         {
-            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local global["+numRow+"x["+numCol+" x i32]][";
-
-            for(int i=0;i<resStringList.size();i++)
+            String resllString=((NumGroup)tmp.wordNumVar).locate+" = dso_local constant ["+numRow+"x["+numCol+" x i32]][";
+            int i;
+            for(i=0;i<resStringList.size();i++)
             {
                 List<String> resGroupString=resStringList.get(i);
                 //结束初始化一维数组寻指针以及赋值
-                resllString+="["+resGroupString.size()+"xi32][";
-                for(int j=0;j<resGroupString.size();j++)
-                {
-                    resllString+="i32"+resGroupString.get(j)+",";
-                }
+                resllString+="["+numCol+" x i32][";
+                int j;
+                for(j=0;j<resGroupString.size();j++)
+                    resllString+="i32 "+resGroupString.get(j)+",";
+                for(j=j;j<numCol;j++)
+                    resllString+="i32 0,";
+
                 if(resllString.endsWith(","))
-                    resllString.substring(0,resllString.length()-1);
-                resllString+="],\n";
+                    resllString=resllString.substring(0,resllString.length()-1);
+                resllString+="],";
+            }
+            for(i=i;i<numRow;i++)
+            {
+                //结束初始化一维数组寻指针以及赋值
+                resllString+="["+numCol+" x i32][zeroinitializer]";
+
             }
 
             if(resllString.endsWith(","))
-                resllString.substring(0,resllString.length()-1);
+                resllString=resllString.substring(0,resllString.length()-1);
             resllString+="]\n";
             resllList.add(resllString);
+            System.out.println(resllString);
         }
         else
         {
@@ -570,18 +612,18 @@ public class IdentWord {
             int allCol=((NumGroup)tmp.wordNumVar).numCol;
             //获取一维数组头指针
             String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
+            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
 
             //获取a[n]的指针
             String ptr=analysis.generStoreLocate();
-            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol);
-            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol);
+            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
 
             //加载a[n]的数值并且存储
             String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+ptr);
-            System.out.println(ptrValue+"=load i32,i32* "+ptr);
+            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
             //返回加载出的a[n]存储位置
             return ptrValue;
@@ -593,26 +635,96 @@ public class IdentWord {
             int allRow=((NumGroup)tmp.wordNumVar).numRow;
             //二维数组总头指针
             String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0");
+            resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
             //二维数组行指针
-            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0");
-            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0");
+            String rowptr=analysis.generStoreLocate();
+            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
 
             //获取a[m][n]的指针
             String ptr=analysis.generStoreLocate();
             //---------计算指针部分语句--------
             String locateMul=analysis.generStoreLocate();
-            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol);
+            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
             String locateAdd=analysis.generStoreLocate();
-            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol);
-            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+locateAdd);
-            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+locateAdd);
+            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
             //加载a[m][n]的数值并且存储
             String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+ptr);
-            System.out.println(ptrValue+"=load i32,i32* "+ptr);
+            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+
+            //返回加载出的a[n]存储位置
+            return ptrValue;
+        }
+        else
+        {
+            System.out.println("暂时不支持更高维度数组");
+            System.exit(3);
+        }
+        return "";
+    }
+
+
+    //指定数组变量加载函数
+    public static String groupPtrValue(IdentWord tmp, List<String> resllList,int numDimen,String strRow,String strCol)
+    {
+        if(numDimen==1)
+        {
+            int allCol=((NumGroup)tmp.wordNumVar).numCol;
+            //获取一维数组头指针
+            String headptr=analysis.generStoreLocate();
+            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+            //获取a[n]的指针
+            String ptr=analysis.generStoreLocate();
+            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+
+//            //加载a[n]的数值并且存储
+//            String ptrValue=analysis.generStoreLocate();
+//            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+//            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+
+            //返回加载出的a[n]存储位置
+            return ptr;
+
+        }
+        else if(numDimen==2)
+        {
+            int allCol=((NumGroup)tmp.wordNumVar).numCol;
+            int allRow=((NumGroup)tmp.wordNumVar).numRow;
+            //二维数组总头指针
+            String headptr=analysis.generStoreLocate();
+            resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            //二维数组行指针
+            String rowptr=analysis.generStoreLocate();
+            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+
+            //获取a[m][n]的指针
+            String ptr=analysis.generStoreLocate();
+            //---------计算指针部分语句--------
+            String locateMul=analysis.generStoreLocate();
+            resllList.add(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+            System.out.println(locateMul+"=mul i32 "+strRow+","+allCol+"\n");
+            String locateAdd=analysis.generStoreLocate();
+            resllList.add(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+            System.out.println(locateAdd+"=add i32 "+locateMul+","+strCol+"\n");
+            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
+
+            //加载a[m][n]的数值并且存储
+            String ptrValue=analysis.generStoreLocate();
+            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
             //返回加载出的a[n]存储位置
             return ptrValue;
@@ -687,24 +799,40 @@ public class IdentWord {
     }
 
    //计算数组元素的维度。行号。列号
-   public  static  NumGroup caclGroupElemParam(Lexer tmpLexer,List<String> resllList,List<String>groupDef)
+   public  static  NumGroup caclGroupElemParam(Lexer tmpLexer,List<String> resllList,List<String>groupDef,int numDimen)
    {
        NumGroup tmp=new NumGroup();
        List<List<String>>dimenGroupDef=new ArrayList<>();
        List<Integer>paramList=new ArrayList<>();
-       for(int i=0;i<groupDef.size();i++)
-       {
-           if(groupDef.get(i).equals("LBracket")||groupDef.get(i).equals("RBracket"))
-               paramList.add(i);
-       }
-       for(int i=0;i<paramList.size();i+=2)
+       if(numDimen==1)
        {
            List<String>tmpList=new ArrayList<>();
-           for(int j=paramList.get(i);j<=paramList.get(i+1);j++)
-               tmpList.add(groupDef.get(j));
+           for(int i=0;i<groupDef.size();i++)
+           {
+               System.out.println(groupDef.get(i)+"!!!!!");
+               tmpList.add(groupDef.get(i));
+           }
            dimenGroupDef.add(tmpList);
-           //获得分离的二维数组赋值表
        }
+       else
+       {
+           for(int i=0;i<groupDef.size();i++)
+           {
+               System.out.println(groupDef.get(i)+"!!!!!");
+               if(groupDef.get(i).equals("LBracket")||groupDef.get(i).equals("RBracket"))
+                   paramList.add(i);
+           }
+           for(int i=0;i<paramList.size();i+=2)
+           {
+               List<String>tmpList=new ArrayList<>();
+               for(int j=paramList.get(i);j<=paramList.get(i+1);j++)
+                   tmpList.add(groupDef.get(j));
+               dimenGroupDef.add(tmpList);
+               //获得分离的二维数组赋值表
+           }
+       }
+
+
        if(dimenGroupDef.size()>2)
        {
            System.out.println("暂时不支持二维以上数组声明");
@@ -734,7 +862,11 @@ public class IdentWord {
                res1=resString;
        }
        if(dimenGroupDef.size()==1)
+       {
            tmp.strCol=res0;
+           tmp.strRow="1";
+       }
+
        else
        {
            tmp.strRow=res0;
@@ -746,8 +878,44 @@ public class IdentWord {
     //非const数组元素赋值函数
     public static void generAssignElemNormal(Lexer tmpLexer, List<String> resllList,String ptrString,String resString)
     {
-        resllList.add("store i32"+resString+","+"i32* "+ptrString+"\n");//生成赋值语句
-        System.out.println("store i32"+resString+","+"i32* "+ptrString+"\n");//打印一下
+        resllList.add("store i32 "+resString+","+"i32* "+ptrString+"\n");//生成赋值语句
+        System.out.println("store i32 "+resString+","+"i32* "+ptrString+"\n");//打印一下
         return;
+    }
+
+    //memset赋初值
+    public static void generMemsetGroup(Lexer tmpLexer, List<String> resllList,IdentWord tmp, boolean ifConst,int belongBlock
+            ,int numDimen,int numRow,int numCol)
+    {
+        if(numDimen==1)
+        {
+            String headptr=analysis.generStoreLocate();
+            resllList.add(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0\n");
+            System.out.println(headptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0\n");
+
+            resllList.add("call void @memset(i32* "+headptr+", i32 0, i32 "+numCol*4+")\n");
+            System.out.println("call void @memset(i32* "+headptr+", i32 0, i32 "+numCol*4+")\n");
+        }
+        else if(numDimen==2)
+        {
+            //二维数组总头指针
+            String headptr=analysis.generStoreLocate();
+            resllList.add(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            System.out.println(headptr+" = getelementptr ["+numRow+" x ["+numCol+" x i32]],["+numRow+" x ["+numCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+            //二维数组总头指针
+            String rowptr=analysis.generStoreLocate();
+            resllList.add(rowptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+            System.out.println(rowptr+" = getelementptr ["+numCol+" x i32], ["+numCol+" x i32]* "+headptr+", i32 0, i32 0"+"\n");
+
+            resllList.add("call void @memset(i32* "+rowptr+", i32 0, i32 "+numRow*numCol*4+")\n");
+            System.out.println("call void @memset(i32* "+rowptr+", i32 0, i32 "+numRow*numCol*4+")\n");
+
+        }
+        else
+        {
+            System.out.println("暂时不支持更高维度数组");
+            System.exit(3);
+        }
     }
 }

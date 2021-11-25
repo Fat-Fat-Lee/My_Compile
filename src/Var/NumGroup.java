@@ -42,7 +42,7 @@ public class NumGroup extends NumVar{
             List<String>oneStringList=new ArrayList<>();
             for(int i=0;i<groupList.size();i++)
             {
-                if(groupList.get(i).equals("Comma")||groupList.get(i).equals("LBrace"))
+                if(groupList.get(i).equals("Comma")||groupList.get(i).equals("RBrace"))
                 {
                     divideInt.add(i);
                     int endExp=divideInt.get(divideInt.size()-1)-1;
@@ -70,13 +70,13 @@ public class NumGroup extends NumVar{
                 System.out.println("赋值超过数组长度");
                 System.exit(3);
             }
+            resStringList.add(oneStringList);
 
         }
         else if(numDimen==2)
         {
             if(groupList.size()==2)
                 return resStringList;
-
             List <Integer>divideInt1=new ArrayList<>();
             for(int i=0;i<groupList.size();i++)
             {
@@ -99,6 +99,16 @@ public class NumGroup extends NumVar{
                 System.exit(3);
             }
 
+//            System.out.println("RES!!!!----------------------------------");
+//            for(int i=0;i<groupDimenList.size();i++)
+//            {
+//                for(int j=0;j<groupDimenList.get(i).size();j++)
+//                {
+//                    System.out.print(groupDimenList.get(i).get(j)+" ");
+//                }
+//                System.out.println("\n");
+//            }
+//            System.out.println("RES!!!!----------------------------------");
             //根据分离的二维数组表进行赋值操作
             for(int k=0;k<groupDimenList.size();k++)
             {
@@ -109,16 +119,18 @@ public class NumGroup extends NumVar{
                 for(int i=0;i<tmpGroupList.size();i++)
                 {
 
-                    if(tmpGroupList.get(i).equals("Comma")||tmpGroupList.get(i).equals("LBrace"))
+                    if(tmpGroupList.get(i).equals("Comma")||tmpGroupList.get(i).equals("RBrace"))
                     {
                         divideInt.add(i);
-                        int endExp=divideInt.get(divideInt.size()-1);
-                        int startExp=divideInt.get(divideInt.size()-2);
+                        int endExp=divideInt.get(divideInt.size()-1)-1;
+                        int startExp=divideInt.get(divideInt.size()-2)+1;
 
                         List<String>expAnalysisList=new ArrayList<>();
                         //System.out.println("表达式在这里！");
                         for(int j=startExp;j<=endExp;j++)
+                        {
                             expAnalysisList.add(tmpGroupList.get(j));
+                        }
 
                         AnalysisExp tmpAnalysisExp=new AnalysisExp();
                         String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
@@ -147,6 +159,19 @@ public class NumGroup extends NumVar{
             System.out.println("暂时不支持分解二维以上数组");
             System.exit(3);
         }
+//        System.out.println("RES!!!!----------------------------------");
+//        for(int i=0;i<resStringList.size();i++)
+//        {
+//            for(int j=0;j<resStringList.get(i).size();j++)
+//            {
+//                System.out.print(resStringList.get(i).get(j)+" ");
+//            }
+//            System.out.println("\n");
+//        }
+//
+//
+
+
         return resStringList;
     }
 
