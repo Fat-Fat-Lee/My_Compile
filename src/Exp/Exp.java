@@ -42,8 +42,15 @@ public class Exp {
     public static String generI1ll(String arg, List<String> resllList){
         String locate=analysis.generStoreLocate();
         resllList.add(locate+"= icmp ne i32 "+arg+", 0\n");
-        System.out.println(locate+" = zext i1 "+arg+" to i32");
+        //System.out.println(locate+" = zext i1 "+arg+" to i32");
         return locate;
+    }
+    public static String generI1I32ll(String arg, List<String> resllList){
+        String locate1=analysis.generStoreLocate();
+        resllList.add(locate1+"= icmp ne i32 "+arg+", 0\n");
+        String locate2=analysis.generStoreLocate();
+        resllList.add(locate2+" = zext i1 "+locate1+" to i32\n");
+        return locate2;
     }
 
     public String generExpll(){
@@ -87,9 +94,16 @@ public class Exp {
             return result + " = icmp ne i32 " + arg1_ + "," + arg2_ + "\n";
 
         else if(op.equals("And"))
+        {
+
             return result+" = and i32 "+arg1_+","+arg2_+"\n";
+        }
+
         else if(op.equals("Or"))
+        {
             return result+" = or i32 "+arg1_+","+arg2_+"\n";
+        }
+
 
         return "";
     }

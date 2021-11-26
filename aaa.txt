@@ -1,32 +1,45 @@
 const int TAPE_LEN = 65536, BUFFER_LEN = 32768;
-int       tape[TAPE_LEN], program[BUFFER_LEN], ptr = 0;
-
+int       ptr = 0;
+ int tape[500];
 int main() {
-    int i = 0, len = getint();
-    while (i < len) {
-        program[i] = getch();
-        i          = i + 1;
-    }
-    program[i] = 0;
+    int i = 0, len = 33;
+
+    int program[300]={10,43,43,43,43,43,43,43,43,91,45,62,43,43,43,43,43,43,43,43,60,93,93,62,43,43,43,43,43,43,43,43,43,46};
     int cur_char, loop;
     i = 0;
+   
     while (program[i]) {
         cur_char = program[i];
+              putint(i);
+       	 putch(32);
+       	 putint(cur_char);
+       	 putch(32);
+                 putint(tape[ptr]);
+                 putch(10);
         if (cur_char == 62) {
             // '>'
             ptr = ptr + 1;
+
         } else if (cur_char == 60) {
             // '<'
             ptr = ptr - 1;
+
         } else if (cur_char == 43) {
             // '+'
+         
             tape[ptr] = tape[ptr] + 1;
+            
         } else if (cur_char == 45) {
             // '-'
+         
             tape[ptr] = tape[ptr] - 1;
+          
         } else if (cur_char == 46) {
             // '.'
+            putch(64);
             putch(tape[ptr]);
+             putch(10);
+            
         } else if (cur_char == 44) {
             // ','
             tape[ptr] = getch();
@@ -36,6 +49,10 @@ int main() {
             while (loop > 0) {
                 i        = i - 1;
                 cur_char = program[i];
+	putint(i);
+       	 putch(33);
+       	 putint(cur_char);
+                 putch(10);
                 if (cur_char == 91) {
                     // '['
                     loop = loop - 1;

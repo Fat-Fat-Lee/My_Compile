@@ -507,7 +507,10 @@ public class AnalysisEqExp {
                     String arg2=llStack.pop();
                     String arg1=llStack.pop();
 
-                    tmpExp=tmpAnalysis.generStoreExp(tmp,arg1,arg2,"LAndExp");
+                    String arg2_=Exp.generI1I32ll(arg2,resllList);
+                    String arg1_=Exp.generI1I32ll(arg1,resllList);
+
+                    tmpExp=tmpAnalysis.generStoreExp(tmp,arg1_,arg2_,"LAndExp");
                     System.out.println(tmpExp.generExpll());
                     resllList.add(tmpExp.generExpll());
                     llStack.push(tmpExp.result);
