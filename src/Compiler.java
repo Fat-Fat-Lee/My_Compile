@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Compiler {
     public static void main(String[] args) {
-//        //后面要把fileName改为args[0]
+////        //后面要把fileName改为args[0]
         String fileName=args[0];
         String targetFileName=args[1];
 //        String fileName="C:\\Users\\惠普\\Desktop\\大三上ljw\\编译原理\\My_Compile\\aaa.txt";
