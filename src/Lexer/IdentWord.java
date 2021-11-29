@@ -800,8 +800,8 @@ public class IdentWord {
                 String addptr=analysis.generStoreLocate();
                 resllList.add(addptr+" = add i32 "+mulptr+", "+strCol+"\n");
                 String rowptr=analysis.generStoreLocate();
-                resllList.add(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
-                System.out.println(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+                resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+                System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
 
 
                 //加载a[m][n]的数值并且存储

@@ -83,10 +83,24 @@ public class AnalysisEqExp {
             //System.out.println(tmp0);
             if(tmp0.equals("Oppose"))
             {
-                expAnalysisList.set(i,"LPar");
-                expAnalysisList.add(i+2,"Eq");
-                expAnalysisList.add(i+3,"Number(0)");
-                expAnalysisList.add(i+4,"RPar");
+                if(i+2<expAnalysisList.size()&&expAnalysisList.get(i+2).equals("LBracket"))
+                {
+                    int endIndex_=findRBracket(i+2,expAnalysisList);
+                    if(endIndex_+1<expAnalysisList.size()&&expAnalysisList.get(endIndex_+1).equals("LBracket"))
+                        endIndex_=findRBracket(endIndex_+1,expAnalysisList);
+                    expAnalysisList.set(i,"LPar");
+                    expAnalysisList.add(endIndex_+1,"Eq");
+                    expAnalysisList.add(endIndex_+2,"Number(0)");
+                    expAnalysisList.add(endIndex_+3,"RPar");
+                }
+                else
+                {
+                    expAnalysisList.set(i,"LPar");
+                    expAnalysisList.add(+2,"Eq");
+                    expAnalysisList.add(i+3,"Number(0)");
+                    expAnalysisList.add(i+4,"RPar");
+                }
+
                 i++;
             }
         }
@@ -113,9 +127,9 @@ public class AnalysisEqExp {
                 }
             }
         }
-//        System.out.println("----------------表达式来啦！！---------------");
-//        for(String tmp:expAnalysisList)
-//            System.out.println(tmp);
+        System.out.println("----------------表达式来啦！！---------------");
+        for(String tmp:expAnalysisList)
+            System.out.println(tmp);
         return;
     }
     public void generAfterStack(Lexer tmpLexer, List<String> expAnalysisList,List<String> resllList)

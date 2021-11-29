@@ -742,6 +742,7 @@ public class Parser {
                    System.out.println("当前定义的函数的返回值应该为i32而不是空！！！");
                    System.exit(3);
                }
+               getSym(resLexerList);
                resllList.add("ret void\n");
                System.out.println("ret void\n");
            }
