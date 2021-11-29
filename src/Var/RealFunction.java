@@ -33,15 +33,25 @@ public class RealFunction {
                 }
                 //参数表里面全都是合法参数了
                 String paramThing=new String();
+                int count=0;
                 for(String k:paramList) {
                     if(k.startsWith("Number"))
                         k=k.substring(7,k.length()-1);//要是普通的Number要去掉外壳
-                    paramThing+="i32 " + k+",";
+                    String preParam=new String();
+
+                    if(((NumFunction) tmp.wordNumVar).FParamList.get(count).pType==0)
+                        preParam="i32 ";
+                    else if(((NumFunction) tmp.wordNumVar).FParamList.get(count).pType==1)
+                        preParam="i32* ";
+                    else
+                        preParam=" [ "+((NumFunction) tmp.wordNumVar).FParamList.get(count).pArrayLen+" x i32 ]* ";
+                    paramThing+=preParam+ k+",";
+                    count++;
                 }
                 if(paramThing.endsWith(","))
                     paramThing=paramThing.substring(0,paramThing.length()-1);
-                if(returnType.equals("int")) {
-                    returnType = "i32";
+                if(returnType.equals("i32")) {
+                    //returnType = "i32";
                     locate=analysis.generStoreLocate();
                     resllList.add(locate+"= call "+returnType+" "+"@"+tmpfunctionName+"("+paramThing+")"+"\n");
                     System.out.println(locate+"= call "+returnType+" "+"@"+tmpfunctionName+"("+paramThing+")"+"\n");

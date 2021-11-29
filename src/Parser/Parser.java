@@ -10,9 +10,7 @@ import Block.MainBlock;
 import Block.WhileBlock;
 import Lexer.Lexer;
 import Lexer.IdentWord;
-import Var.NumGroup;
-import Var.NumNormal;
-import Var.RealFunction;
+import Var.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +26,7 @@ public class Parser {
     public static boolean global=false;
     public int continueTag=0;
     public int breakTag=0;
+    public boolean funcReturn=false;//true为返回int   false为返回void
     public String loopJmp0;
     public String loopJmp1;
     public String loopJmp2;
@@ -65,34 +64,77 @@ public class Parser {
 
     public void compUnitParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN compunit");
+//        compUnitParser(tmpLexer,resLexerList,resllList);
 //        分配块号，语句结束回收块号
         Parser.blockStack.add(Parser.allocaBlock++);
-        while(tmpSym.equals("Const")||((tmpSym.equals("Int"))&&resLexerIndex<resLexerList.size()&&
-                !resLexerList.get(resLexerIndex).equals("Ident(main)")))
+        while(tmpSym.equals("Const")||(tmpSym.equals("Int"))||(tmpSym.equals("Void")))
         {
-            global=true;
-            declParser(tmpLexer,resLexerList,resllList);
+            if(resLexerList.get(resLexerIndex).startsWith("Ident")&&resLexerList.get(resLexerIndex+1).equals("LPar"))
+            {
+                global=false;
+                //分配块号，语句结束回收块号
+                Parser.blockStack.add(Parser.allocaBlock++);
+                funcDefParser(tmpLexer,resLexerList,resllList);
+                //函数结束，回收块号
+                Parser.blockStack.remove(Parser.blockStack.size()-1);
+                global=true;
+
+            }
+            else
+            {
+                global=true;
+                declParser(tmpLexer,resLexerList,resllList);
+                global=false;
+            }
+
         }
-           global=false;
-
-        funcDefParser(tmpLexer,resLexerList,resllList);
-
-//        //全局变量，一切结束才可以回收块号
-//        Parser.blockStack.remove(Parser.blockStack.size()-1);
-
         System.out.println("compUnit");
     }
     public void funcDefParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN funcdef");
-        resllList.add("define dso_local i32 @main(){"+"\n");
-        funcTypeParser(tmpLexer,resLexerList,resllList);
+        boolean haveCan=false;
+        String returnType=funcTypeParser(tmpLexer,resLexerList,resllList);
+        NumFunction tmpNumFunction=new NumFunction();
+        tmpNumFunction.returnType=returnType;
+        String varSym=new String();
+
         if(tmpSym.startsWith("Ident")){
+            varSym=tmpSym;
+
             getSym(resLexerList);
             if(tmpSym.equals("LPar")){
                 getSym(resLexerList);
+                resllList.add("define dso_local "+returnType+" @"+varSym.substring(6,varSym.length()-1)+"(");
+
+                if(!tmpSym.equals("RPar"))
+                {
+                    haveCan=true;
+                    List<FParam>FParamList=funcFParamsParser(tmpLexer,resLexerList,resllList);
+                    tmpNumFunction.FParamList=FParamList;
+                    tmpNumFunction.length=FParamList.size();
+                }
+
                 if(tmpSym.equals("RPar")){
                     getSym(resLexerList);
+                    resllList.add("){\n");
+
+                    if(!haveCan)
+                    {
+                        List<FParam>FParamList=new ArrayList<>();
+                        tmpNumFunction.FParamList=FParamList;
+                        tmpNumFunction.length=0;
+                    }
+
+                    IdentWord tmpFunction=IdentWord.generIdentFunction(tmpLexer,resllList,varSym,tmpNumFunction);
+                    //把函数的变量参数全加载进入函数内部
+                    ((NumFunction)tmpFunction.wordNumVar).generParamIdenword
+                            (tmpLexer,resllList,Parser.blockStack.get(blockStack.size()-1));
+
                     blockParser(tmpLexer,resLexerList,resllList);
+                    if(returnType.equals("void"))
+                        resllList.add("ret void\n");
+                    else
+                        resllList.add("ret i32 0\n");
                     resllList.add("}"+"\n");
                 }
                 else
@@ -101,9 +143,89 @@ public class Parser {
             else
                 System.exit(2);
         }
+
+
+
         System.out.println("funcDef");
     }
+    public List<FParam> funcFParamsParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        System.out.println("IN funcFParams");
+        List<FParam>FParamList=new ArrayList<>();
+        FParam tmp=new FParam();
 
+        tmp=funcFParamParser(tmpLexer,resLexerList,resllList);
+        FParamList.add(tmp);
+
+        while(tmpSym.equals("Comma"))
+        {
+            getSym(resLexerList);
+            resllList.add(",");
+            tmp=funcFParamParser(tmpLexer,resLexerList,resllList);
+            FParamList.add(tmp);
+        }
+        System.out.println("funcFParams");
+        return FParamList;
+    }
+    public FParam funcFParamParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+        FParam tmpParam=new FParam();
+        tmpParam.pLocate=analysis.generStoreLocate();
+
+        System.out.println("IN funcFParam");
+        bTypeParser(tmpLexer,resLexerList,resllList);
+        if(tmpSym.startsWith("Ident"))
+        {
+            tmpParam.pName =tmpSym.substring(6,tmpSym.length()-1);
+            tmpParam.pType=0;
+            getSym(resLexerList);
+            if(tmpSym.equals("LBracket"))
+            {
+                tmpParam.pType=1;
+                getSym(resLexerList);
+                if(tmpSym.equals("RBracket"))
+                {
+                    getSym(resLexerList);
+                    while(tmpSym.equals("LBracket"))
+                    {
+                        tmpParam.pType=2;
+                        getSym(resLexerList);
+
+                        //开始计算二维数组长度
+                        int startExp=resLexerIndex-1;
+                        expParser(tmpLexer,resLexerList,resllList);
+                        int endExp=resLexerIndex-2;
+                        List<String>expAnalysisList=new ArrayList<>();
+                        for(int i=startExp;i<=endExp;i++) {
+                            expAnalysisList.add(resLexerList.get(i));
+                            System.out.println(resLexerList.get(i));
+                        }
+                        String resString=new String();
+                        AnalysisValueExp tmpAnalysisExp=new AnalysisValueExp();
+                        resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+                        if(resString.startsWith("Ident")||resString.startsWith("%"))
+                        {
+                            System.out.println("函数定义二维数组长度应为常量表达式");
+                            System.exit(3);
+                        }
+                        tmpParam.pArrayLen=Integer.parseInt(resString);
+
+                        if(tmpSym.equals("RBracket"))
+                            getSym(resLexerList);
+                        else
+                            System.exit(2);
+                    }
+                }
+                else
+                    System.exit(2);
+            }
+        }
+        else
+            System.exit(2);
+
+        resllList.add(tmpParam.generFParam());//添加参数声明
+//        tmpParam.generParamIdenword(tmpLexer,resllList,Parser.blockStack.get(Parser.blockStack.size()-1));
+        System.out.println("funcFParam");
+        return tmpParam;
+    }
 
 
     //-------------------------------------声明语句----------------------------------------------
@@ -175,16 +297,27 @@ public class Parser {
                 for(int i=groupParamStart;i<=groupParamEnd;i++)
                     groupdef.add(resLexerList.get(i));
                 tmpNumGroup=IdentWord.caclGroupParam(tmpLexer,resllList,groupdef);
+
+                int numBlock;
+                if(global)
+                    numBlock=0;
+                else
+                    numBlock=Parser.blockStack.get(Parser.blockStack.size()-1);
                 IdentWord.generIdentGroup(tmpLexer,resllList,varSym,true,
-                        Parser.blockStack.get(Parser.blockStack.size()-1)
+                        numBlock
                         ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
 
             }
             //普通变量声明
             else
             {
+                int numBlock;
+                if(global)
+                    numBlock=0;
+                else
+                    numBlock=Parser.blockStack.get(Parser.blockStack.size()-1);
                 IdentWord.generIdentNormal(tmpLexer,resllList,varSym,true,
-                        Parser.blockStack.get(Parser.blockStack.size()-1));
+                        numBlock);
             }
 //--------------------------------------声明结束，开始赋值----------------------------------
             if(tmpSym.equals("Assign"))
@@ -382,7 +515,7 @@ public class Parser {
                     }
                     else {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
-                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                0
                                 ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
                             //进行赋值
                         IdentWord.generAssignGroupGlobal(tmpLexer,resllList,varSym,resStringList,
@@ -403,7 +536,7 @@ public class Parser {
                     else
                     {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
-                                Parser.blockStack.get(Parser.blockStack.size()-1)
+                                0
                                 ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
                         //进行赋值,全赋值为0
                         IdentWord.generZeroGroupGlobal(tmpLexer,resllList,varSym,
@@ -416,8 +549,13 @@ public class Parser {
                 if(tmpSym.equals("Assign"))
                 {
                     getSym(resLexerList);
+                    int numBlock;
+                    if(global)
+                        numBlock=0;
+                    else
+                        numBlock=Parser.blockStack.get(Parser.blockStack.size()-1);
                     IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
-                            Parser.blockStack.get(Parser.blockStack.size()-1));
+                            numBlock);
                     int startExp=resLexerIndex-1;
                     initValParser(tmpLexer,resLexerList,resllList);
                     int endExp=resLexerIndex-2;
@@ -460,7 +598,7 @@ public class Parser {
                     {
                         //generNormal中生成声明语句
                         IdentWord tmpWord=IdentWord.generIdentNormal(tmpLexer,resllList,varSym,false,
-                                Parser.blockStack.get(Parser.blockStack.size()-1));
+                                0);
                         //进行赋值,生成赋值声明语句
                         String resString=new String();
                         resString="0";
@@ -510,15 +648,25 @@ public class Parser {
     }
 //--------------------------声明赋值部分结束---------------------------------------
 
-    public void funcTypeParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+    public String funcTypeParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN functype");
         if(tmpSym.equals("Int"))
         {
             getSym(resLexerList);
             System.out.println("funcType");
+            funcReturn=true;
+            return "i32";
+        }
+        else if(tmpSym.equals("Void"))
+        {
+            getSym(resLexerList);
+            System.out.println("funcType");
+            funcReturn=false;
+            return "void";
         }
         else
             System.exit(2);
+        return "";
     }
 
 
@@ -587,26 +735,45 @@ public class Parser {
        {
            getSym(resLexerList);
 
-           int startExp=resLexerIndex-1;
-           expParser(tmpLexer,resLexerList,resllList);
-
-           int endExp=resLexerIndex-2;
-           List<String>expAnalysisList=new ArrayList<>();
-           for(int i=startExp;i<=endExp;i++) {
-               expAnalysisList.add(resLexerList.get(i));
-               System.out.println(resLexerList.get(i));
-           }
-           String resString=new String();
-           resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
-           //顺利把表达式字符串数组送去变为ll编码了
-           //接下来生成返回语句
-           resllList.add("ret i32 "+resString+"\n");
-           System.out.println("ret i32 "+resString+"\n");
-
            if(tmpSym.equals("Semicolon"))
-               getSym(resLexerList);
+           {
+               if(funcReturn)
+               {
+                   System.out.println("当前定义的函数的返回值应该为i32而不是空！！！");
+                   System.exit(3);
+               }
+               resllList.add("ret void\n");
+               System.out.println("ret void\n");
+           }
            else
-               System.exit(2);
+           {
+               if(!funcReturn)
+               {
+                   System.out.println("当前定义的函数的返回值应该为空而不是i32！！！");
+                   System.exit(3);
+               }
+               int startExp=resLexerIndex-1;
+               expParser(tmpLexer,resLexerList,resllList);
+
+               int endExp=resLexerIndex-2;
+               List<String>expAnalysisList=new ArrayList<>();
+               for(int i=startExp;i<=endExp;i++) {
+                   expAnalysisList.add(resLexerList.get(i));
+                   System.out.println(resLexerList.get(i));
+               }
+               String resString=new String();
+               resString=new AnalysisExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+               //顺利把表达式字符串数组送去变为ll编码了
+               //接下来生成返回语句
+               resllList.add("ret i32 "+resString+"\n");
+               System.out.println("ret i32 "+resString+"\n");
+
+               if(tmpSym.equals("Semicolon"))
+                   getSym(resLexerList);
+               else
+                   System.exit(2);
+           }
+
 
        }
        else if(tmpSym.equals("If"))
@@ -777,8 +944,6 @@ public class Parser {
                    groupdef.add(resLexerList.get(i));
 
                IdentWord tmp=tmpLexer.identer(varSym.substring(6,varSym.length()-1));
-               tmpNumGroup=IdentWord.caclGroupElemParam(tmpLexer,resllList,groupdef,((NumGroup)tmp.wordNumVar).numDimen);
-
 
                if(tmp==null)
                {
@@ -786,6 +951,7 @@ public class Parser {
                    System.out.println("变量不存在，无法进行赋值");
                    System.exit(3);
                }
+               tmpNumGroup=IdentWord.caclGroupElemParam(tmpLexer,resllList,groupdef,((NumGroup)tmp.wordNumVar).numDimen);
                if(tmp.ifConst)
                {
                    System.out.println("const数组的变量不可二次赋值");
@@ -796,6 +962,9 @@ public class Parser {
                    System.out.println("该变量为函数变量，无法赋值！！！");
                    System.exit(3);//该变量声明过，报错
                }
+
+
+
                else if(tmp.wordType.equals("numGroup"))
                {
                    ptrString=IdentWord.groupPtrValue(tmp,resllList,tmpNumGroup.numDimen,tmpNumGroup.strRow,tmpNumGroup.strCol);

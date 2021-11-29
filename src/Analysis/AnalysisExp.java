@@ -146,51 +146,87 @@ public class AnalysisExp {
                             {
                                 if(((NumGroup)tmpIdent.wordNumVar).numDimen==1)
                                 {
-                                    int j;
-                                    int startIndex=i+1;
-                                    int endIndex=findRBracket(startIndex,expAnalysisList);
-                                    List<String>nextExpList=new ArrayList<>();
-                                    //获得exp数组
-                                    for( j=startIndex+1;j<endIndex;j++)
-                                        nextExpList.add(expAnalysisList.get(j));
+                                    if(!expAnalysisList.get(i+1).equals("LBracket"))
+                                    {
+                                        //获取一维数组头指针
+                                        int allCol=((NumGroup)tmpIdent.wordNumVar).numCol;
 
-                                    AnalysisExp tmpAnalysisExp=new AnalysisExp();
-                                    String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,nextExpList,new analysis(),resllList);
-                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,1,"1",resString);
-                                    afterStack.push(ptrLocate);
+                                        String ptrLocate=IdentWord.groupPtrHeadLoad(tmpIdent,resllList,1,"",0);
+                                        afterStack.push(ptrLocate);
+                                    }
+                                    else
+                                    {
+                                        int j;
+                                        int startIndex=i+1;
+                                        int endIndex=findRBracket(startIndex,expAnalysisList);
+                                        List<String>nextExpList=new ArrayList<>();
+                                        //获得exp数组
+                                        for( j=startIndex+1;j<endIndex;j++)
+                                            nextExpList.add(expAnalysisList.get(j));
 
-                                    i=endIndex;
+                                        AnalysisExp tmpAnalysisExp=new AnalysisExp();
+                                        String resString=tmpAnalysisExp.mainAnalysisExp(tmpLexer,nextExpList,new analysis(),resllList);
+                                        String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,1,"1",resString);
+                                        afterStack.push(ptrLocate);
+
+                                        i=endIndex;
+                                    }
+
                                 }
                                 else if(((NumGroup)tmpIdent.wordNumVar).numDimen==2)
                                 {
-                                    //行
-                                    int j;
-                                    int startIndex=i+1;
-                                    int endIndex=findRBracket(startIndex,expAnalysisList);
-                                    List<String>nextExpList1=new ArrayList<>();
-                                    //获得exp数组
-                                    for( j=startIndex+1;j<endIndex;j++)
-                                        nextExpList1.add(expAnalysisList.get(j));
+                                    if(!expAnalysisList.get(i+1).equals("LBracket"))
+                                    {
+                                        int allCol=((NumGroup)tmpIdent.wordNumVar).numCol;
+                                        int allRow=((NumGroup)tmpIdent.wordNumVar).numRow;
+                                        //二维数组总头指针
+                                        String ptrLocate=IdentWord.groupPtrHeadLoad(tmpIdent,resllList,2,"",0);
+                                        afterStack.push(ptrLocate);
+                                    }
+                                    else
+                                    {
+                                        //行
+                                        int j;
+                                        int startIndex=i+1;
+                                        int endIndex=findRBracket(startIndex,expAnalysisList);
+                                        List<String>nextExpList1=new ArrayList<>();
+                                        //获得exp数组
+                                        for( j=startIndex+1;j<endIndex;j++)
+                                            nextExpList1.add(expAnalysisList.get(j));
 
-                                    AnalysisExp tmpAnalysisExp1=new AnalysisExp();
-                                    String resString1=tmpAnalysisExp1.mainAnalysisExp(tmpLexer,nextExpList1,new analysis(),resllList);
-                                    i=endIndex;
+                                        AnalysisExp tmpAnalysisExp1=new AnalysisExp();
+                                        String resString1=tmpAnalysisExp1.mainAnalysisExp(tmpLexer,nextExpList1,new analysis(),resllList);
+                                        i=endIndex;
 
-                                    //列
-                                    startIndex=i+1;
-                                    endIndex=findRBracket(startIndex,expAnalysisList);
-                                    List<String>nextExpList2=new ArrayList<>();
-                                    //获得exp数组
-                                    for( j=startIndex+1;j<endIndex;j++)
-                                        nextExpList2.add(expAnalysisList.get(j));
+                                        if(!expAnalysisList.get(i+1).equals("LBracket"))
+                                        {
+                                            int allCol=((NumGroup)tmpIdent.wordNumVar).numCol;
+                                            int allRow=((NumGroup)tmpIdent.wordNumVar).numRow;
+                                            String ptrLocate=IdentWord.groupPtrHeadLoad(tmpIdent,resllList,2,resString1,1);
+                                            afterStack.push(ptrLocate);
+                                        }
+                                        else
+                                        {
+                                            //列
+                                            startIndex=i+1;
+                                            endIndex=findRBracket(startIndex,expAnalysisList);
+                                            List<String>nextExpList2=new ArrayList<>();
+                                            //获得exp数组
+                                            for( j=startIndex+1;j<endIndex;j++)
+                                                nextExpList2.add(expAnalysisList.get(j));
 
-                                    AnalysisExp tmpAnalysisExp2=new AnalysisExp();
-                                    String resString2=tmpAnalysisExp2.mainAnalysisExp(tmpLexer,nextExpList2,new analysis(),resllList);
+                                            AnalysisExp tmpAnalysisExp2=new AnalysisExp();
+                                            String resString2=tmpAnalysisExp2.mainAnalysisExp(tmpLexer,nextExpList2,new analysis(),resllList);
 
-                                    String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,2,resString1,resString2);
-                                    afterStack.push(ptrLocate);
+                                            String ptrLocate=IdentWord.groupPtrLoad(tmpIdent,resllList,2,resString1,resString2);
+                                            afterStack.push(ptrLocate);
 
-                                    i=endIndex;
+                                            i=endIndex;
+                                        }
+                                        }
+
+
+
                                 }
                                 else
                                 {
@@ -533,7 +569,7 @@ public class AnalysisExp {
                     }//params形如【“Number（10）”,"%5","%2"】
                     //在这里生成函数调用ll代码
                     RealFunction.generFunctionll(resllList,tmpLexer,tmp,params);
-                    if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("int"))
+                    if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("i32"))
                         llStack.push("%x"+(analysis.storeNum-1));//把函数结果放回栈中
                     else//要是函数结果为空，则看栈是否空，空则没问题
                     {

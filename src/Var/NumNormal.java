@@ -21,4 +21,11 @@ public class NumNormal extends NumVar{
         tmp.numType="int";
         return tmp;
     }
+
+    public static NumNormal identNumParamNormal(String pLocate){
+        NumNormal tmp=new NumNormal();
+        tmp.locate= pLocate;
+        tmp.numType="int";
+        return tmp;
+    }
 }

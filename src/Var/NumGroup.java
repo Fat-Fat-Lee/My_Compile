@@ -23,6 +23,13 @@ public class NumGroup extends NumVar{
         tmp.locate= analysis.generStoreLocate();
         return tmp;
     }
+
+    public static NumGroup identNumParamGroup(String pLocate){
+        NumGroup tmp=new NumGroup();
+        tmp.locate=pLocate;
+        return tmp;
+    }
+
     public static NumGroup identNumGroupGlobal(String wordName){
         NumGroup tmp=new NumGroup();
         tmp.locate= "@"+wordName;

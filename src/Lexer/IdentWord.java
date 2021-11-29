@@ -20,10 +20,11 @@ public class IdentWord {
     public String wordType;//numNormal是数字，numGroup是数组，numFunction是函数
     public boolean ifConst=false;//是否为固定标识符，只能赋值一次
     public NumVar wordNumVar;//根据类型进行标识符存储
+    public boolean ifParam=false;
     public int belongBlock;
 
     //生成函数标识符,声明函数
-    public static IdentWord generIdentFunction(Lexer tmpLexer,List<String> resllList,String functionSymbol,int length,String returnType)
+    public static IdentWord generIdentFunction(Lexer tmpLexer,List<String> resllList,String functionSymbol,NumFunction tmpNumFunction)
     {
         String tmpfunctionName=functionSymbol.substring(6,functionSymbol.length()-1);
         if(tmpLexer.identer(tmpfunctionName)!=null)
@@ -37,22 +38,10 @@ public class IdentWord {
         tmp.wordName=functionSymbol.substring(6,functionSymbol.length()-1);
         tmp.wordSymbol=functionSymbol;
         tmp.wordType="numFunction";
-        tmp.wordNumVar=new NumFunction(length,returnType);
+        tmp.wordNumVar=tmpNumFunction;
+        tmp.belongBlock=0;
         tmpLexer.identWordList.add(tmp);
 
-        String tmpReturn=returnType;
-        if(returnType.equals("int"))
-            tmpReturn="i32";
-        String params=new String();
-        for(int i=0;i<length;i++)
-            params+="i32"+",";
-        if(params.endsWith(","))
-            params=params.substring(0,params.length()-1);
-        //生成规范参数列表形式和返回形式
-
-
-        resllList.add("declare "+tmpReturn+" @"+tmp.wordName+"("+params+")\n");
-        System.out.println("declare "+tmpReturn+" @"+tmp.wordName+"("+params+")\n");//打印一下
         return tmp;
     }
     //生成变量标识符,声明变量，该变量已定下来存储位置
@@ -765,43 +754,106 @@ public class IdentWord {
 
 
 
-    //指定数组变量加载函数
+    //指定数组变量加载函数，式子右侧用
     public static String groupPtrLoad(IdentWord tmp, List<String> resllList,int numDimen,String strRow,String strCol)
     {
-        if(numDimen==1)
+        if(tmp.ifParam)
         {
-            int allCol=((NumGroup)tmp.wordNumVar).numCol;
-            //获取一维数组头指针
-            String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+            if(numDimen==1)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
 
-            //获取a[n]的指针
-            String ptr=analysis.generStoreLocate();
-            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
-            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+                //获取a[n]的指针
+                String ptr=analysis.generStoreLocate();
+                resllList.add(ptr+" = getelementptr i32, i32* "+headptr+", i32 "+strCol+"\n");
+                System.out.println(ptr+" = getelementptr i32, i32* "+headptr+", i32 "+strCol+"\n");
 
-            //加载a[n]的数值并且存储
-            String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
-            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+                //加载a[n]的数值并且存储
+                String ptrValue=analysis.generStoreLocate();
+                resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+                System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
-            //返回加载出的a[n]存储位置
-            return ptrValue;
+                //返回加载出的a[n]存储位置
+                return ptrValue;
 
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+
+                String headptr_=analysis.generStoreLocate();
+                resllList.add(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 \n");
+                System.out.println(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 \n");
+
+                //计算元素位置
+                String mulptr=analysis.generStoreLocate();
+                resllList.add(mulptr+" = mul i32 "+strRow+", "+allCol+"\n");
+                String addptr=analysis.generStoreLocate();
+                resllList.add(addptr+" = add i32 "+mulptr+", "+strCol+"\n");
+                String rowptr=analysis.generStoreLocate();
+                resllList.add(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+                System.out.println(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+
+
+                //加载a[m][n]的数值并且存储
+                String ptrValue=analysis.generStoreLocate();
+                resllList.add(ptrValue+"=load i32,i32* "+rowptr+"\n");
+                System.out.println(ptrValue+"=load i32,i32* "+rowptr+"\n");
+
+                //返回加载出的a[n]存储位置
+                return ptrValue;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
         }
-        else if(numDimen==2)
+        else
         {
-            int allCol=((NumGroup)tmp.wordNumVar).numCol;
-            int allRow=((NumGroup)tmp.wordNumVar).numRow;
-            //二维数组总头指针
-            String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            //二维数组行指针
-            String rowptr=analysis.generStoreLocate();
-            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
-            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+            if(numDimen==1)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+                //获取a[n]的指针
+                String ptr=analysis.generStoreLocate();
+                resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+                System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+
+                //加载a[n]的数值并且存储
+                String ptrValue=analysis.generStoreLocate();
+                resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+                System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+
+                //返回加载出的a[n]存储位置
+                return ptrValue;
+
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                //二维数组行指针
+                String rowptr=analysis.generStoreLocate();
+                resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+                System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
 //            //获取a[m][n]的指针
 //            String ptr=analysis.generStoreLocate();
 //            //---------计算指针部分语句--------
@@ -814,61 +866,219 @@ public class IdentWord {
 //            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 //            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
-            //加载a[m][n]的数值并且存储
-            String ptrValue=analysis.generStoreLocate();
-            resllList.add(ptrValue+"=load i32,i32* "+rowptr+"\n");
-            System.out.println(ptrValue+"=load i32,i32* "+rowptr+"\n");
+                //加载a[m][n]的数值并且存储
+                String ptrValue=analysis.generStoreLocate();
+                resllList.add(ptrValue+"=load i32,i32* "+rowptr+"\n");
+                System.out.println(ptrValue+"=load i32,i32* "+rowptr+"\n");
 
-            //返回加载出的a[n]存储位置
-            return ptrValue;
+                //返回加载出的a[n]存储位置
+                return ptrValue;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
+        }
+
+        return "";
+    }
+
+    //加载二维数组头，二维数组行指针；加载一维数组头指针；式子右侧用。loadType:0是头；1是行
+    public static String groupPtrHeadLoad(IdentWord tmp, List<String> resllList,int numDimen,String strRow,int loadType)
+    {
+        if(tmp.ifParam)
+        {
+            if(numDimen==1&&loadType==0)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+
+                //返回加载出的a[n]存储位置
+                return headptr;
+
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+
+                if(loadType==0)
+                    return headptr;
+
+                String headptr_=analysis.generStoreLocate();
+                resllList.add(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+" \n");
+                System.out.println(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+" \n");
+
+                return headptr_;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
         }
         else
         {
-            System.out.println("暂时不支持更高维度数组");
-            System.exit(3);
+            if(numDimen==1)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+                //返回加载出的a[n]存储位置
+                return headptr;
+
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+                if(loadType==0)
+                    return headptr;
+
+                //二维数组行指针
+                String addptr=analysis.generStoreLocate();
+                resllList.add(addptr+" = add i32 0, "+strRow+"\n");
+                String mulptr=analysis.generStoreLocate();
+                resllList.add( mulptr+"= mul i32 "+addptr+", "+allCol+"\n");
+
+                String rowptr_=analysis.generStoreLocate();
+                resllList.add(rowptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 ,i32 "+mulptr+"\n");
+                System.out.println(rowptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 ,i32 "+mulptr+"\n");
+
+
+
+                //返回加载出的a[n]存储位置
+                return rowptr_;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
         }
+
         return "";
     }
 
 
-    //指定数组变量加载函数
+
+    //指定数组变量值加载函数,式子左侧用
     public static String groupPtrValue(IdentWord tmp, List<String> resllList,int numDimen,String strRow,String strCol)
     {
-        if(numDimen==1)
+        if(tmp.ifParam)
         {
-            int allCol=((NumGroup)tmp.wordNumVar).numCol;
+            if(numDimen==1)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load i32* , i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
 
-            //获取一维数组头指针
-            String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                //获取a[n]的指针
+                String ptr=analysis.generStoreLocate();
+                resllList.add(ptr+" = getelementptr i32, i32* "+headptr+", i32 "+strCol+"\n");
+                System.out.println(ptr+" = getelementptr i32, i32* "+headptr+", i32 "+strCol+"\n");
 
-            //获取a[n]的指针
-            String ptr=analysis.generStoreLocate();
-            resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
-            System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+                //加载a[n]的数值并且存储
+//                String ptrValue=analysis.generStoreLocate();
+//                resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
+//                System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
+
+                //返回加载出的a[n]存储位置
+                return ptr;
+
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+                System.out.println(headptr+" = load ["+allCol+" x i32]*, ["+allCol+" x i32]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
+
+                String headptr_=analysis.generStoreLocate();
+                resllList.add(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 \n");
+                System.out.println(headptr_+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 0 \n");
+
+                //计算元素位置
+                String mulptr=analysis.generStoreLocate();
+                resllList.add(mulptr+" = mul i32 "+strRow+", "+allCol+"\n");
+                String addptr=analysis.generStoreLocate();
+                resllList.add(addptr+" = add i32 "+mulptr+", "+strCol+"\n");
+                String rowptr=analysis.generStoreLocate();
+                resllList.add(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+                System.out.println(rowptr+" = getelementptr ["+3+" x i32], ["+3+" x i32]* "+headptr_+", i32 0, i32 "+addptr+"\n");
+
+
+//                //加载a[m][n]的数值并且存储
+//                String ptrValue=analysis.generStoreLocate();
+//                resllList.add(ptrValue+"=load i32,i32* "+rowptr+"\n");
+//                System.out.println(ptrValue+"=load i32,i32* "+rowptr+"\n");
+
+                //返回加载出的a[n]存储位置
+                return rowptr;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
+        }
+        else
+        {
+            if(numDimen==1)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+
+                //获取一维数组头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+
+                //获取a[n]的指针
+                String ptr=analysis.generStoreLocate();
+                resllList.add(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
+                System.out.println(ptr+"=getelementptr i32,i32* "+headptr+", i32 "+strCol+"\n");
 
 //            //加载a[n]的数值并且存储
 //            String ptrValue=analysis.generStoreLocate();
 //            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
 //            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
-            //返回加载出的a[n]存储位置
-            return ptr;
+                //返回加载出的a[n]存储位置
+                return ptr;
 
-        }
-        else if(numDimen==2)
-        {
-            int allCol=((NumGroup)tmp.wordNumVar).numCol;
-            int allRow=((NumGroup)tmp.wordNumVar).numRow;
-            //二维数组总头指针
-            String headptr=analysis.generStoreLocate();
-            resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
-            //二维数组行指针
-            String rowptr=analysis.generStoreLocate();
-            resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
-            System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+            }
+            else if(numDimen==2)
+            {
+                int allCol=((NumGroup)tmp.wordNumVar).numCol;
+                int allRow=((NumGroup)tmp.wordNumVar).numRow;
+                //二维数组总头指针
+                String headptr=analysis.generStoreLocate();
+                resllList.add(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                System.out.println(headptr+" = getelementptr ["+allRow+" x ["+allCol+" x i32]],["+allRow+" x ["+allCol+" x i32]]* "+((NumGroup)tmp.wordNumVar).locate+", i32 0, i32 0"+"\n");
+                //二维数组行指针
+                String rowptr=analysis.generStoreLocate();
+                resllList.add(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
+                System.out.println(rowptr+" = getelementptr ["+allCol+" x i32], ["+allCol+" x i32]* "+headptr+", i32 "+strRow+", i32 "+strCol+"\n");
 
 //            //获取a[m][n]的指针
 //            String ptr=analysis.generStoreLocate();
@@ -882,19 +1092,21 @@ public class IdentWord {
 //            resllList.add(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 //            System.out.println(ptr+"=getelementptr i32,i32* "+rowptr+", i32 "+locateAdd+"\n");
 
-            //加载a[m][n]的数值并且存储
+                //加载a[m][n]的数值并且存储
 //            String ptrValue=analysis.generStoreLocate();
 //            resllList.add(ptrValue+"=load i32,i32* "+ptr+"\n");
 //            System.out.println(ptrValue+"=load i32,i32* "+ptr+"\n");
 
-            //返回加载出的a[n]存储位置
-            return rowptr;
+                //返回加载出的a[n]存储位置
+                return rowptr;
+            }
+            else
+            {
+                System.out.println("暂时不支持更高维度数组");
+                System.exit(3);
+            }
         }
-        else
-        {
-            System.out.println("暂时不支持更高维度数组");
-            System.exit(3);
-        }
+
         return "";
     }
 

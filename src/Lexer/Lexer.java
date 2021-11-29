@@ -1,5 +1,7 @@
 package Lexer;
 import Parser.Parser;
+import Var.FParam;
+import Var.NumFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ public class Lexer {
     //lexer初始化
     public void lexerInit(List<String> resllList){
         this.reserveWordList.add(new ReserveWord("int","Int"));
+        this.reserveWordList.add(new ReserveWord("void","Void"));
         this.reserveWordList.add(new ReserveWord("if","If"));
         this.reserveWordList.add(new ReserveWord("else","Else"));
         this.reserveWordList.add(new ReserveWord("while","While"));
@@ -27,11 +30,70 @@ public class Lexer {
         this.reserveWordList.add(new ReserveWord("return","Return"));
 
 //声明好库函数
-        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getint)",0,"int"));
-        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getch)",0,"int"));
-        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putint)",1,"void"));
-        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putch)",1,"void"));
+//        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getint)",0,"int"));
+//        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getch)",0,"int"));
+//        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putint)",1,"void"));
+//        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putch)",1,"void"));
 //        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(memset)",3,"void"));
+
+
+        //getint
+        FParam getintFparam=new FParam();
+        List<FParam>getintFParamList=new ArrayList<>();//参数列表
+        NumFunction getintNumFunction=new NumFunction(0,"i32",getintFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getint)",getintNumFunction));
+
+        //getch
+        FParam getchFparam=new FParam();
+        List<FParam>getchFParamList=new ArrayList<>();//参数列表
+        NumFunction getchNumFunction=new NumFunction(0,"i32",getchFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getch)",getchNumFunction));
+
+        //putint
+        FParam putintFparam=new FParam();
+        putintFparam.pType=0;
+        List<FParam>putintFParamList=new ArrayList<>();//参数列表
+        putintFParamList.add(putintFparam);
+        NumFunction putintNumFunction=new NumFunction(1,"void",putintFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putint)",putintNumFunction));
+
+        //putch
+        FParam putchFparam=new FParam();
+        putchFparam.pType=0;
+        List<FParam>putchFParamList=new ArrayList<>();//参数列表
+        putchFParamList.add(putchFparam);
+        NumFunction putchNumFunction=new NumFunction(1,"void",putchFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putch)",putchNumFunction));
+
+
+        //int getarray(int []);
+        FParam getarrayFparam=new FParam();
+        getarrayFparam.pType=1;
+        List<FParam>getarrayFParamList=new ArrayList<>();//参数列表
+        getarrayFParamList.add(getarrayFparam);
+        NumFunction getarrayNumFunction=new NumFunction(1,"i32",getarrayFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(getarray)",getarrayNumFunction));
+
+
+        //void putarray(int, int[]);
+        FParam putarrayFparam1=new FParam();
+        putarrayFparam1.pType=0;
+        FParam putarrayFparam2=new FParam();
+        putarrayFparam2.pType=1;
+        List<FParam>putarrayFParamList=new ArrayList<>();//参数列表
+        putarrayFParamList.add(putarrayFparam1);
+        putarrayFParamList.add(putarrayFparam2);
+        NumFunction putarrayNumFunction=new NumFunction(2,"void",putarrayFParamList);
+        this.identWordList.add(IdentWord.generIdentFunction(this,resllList,"Ident(putarray)",putarrayNumFunction));
+
+
+        resllList.add("declare i32 @getint()\n");
+        resllList.add("declare i32 @getch()\n");
+        resllList.add("declare i32 @getarray(i32*)\n");
+        resllList.add("declare void @putint(i32)\n");
+        resllList.add("declare void @putch(i32)\n");
+        resllList.add("declare void @putarray(i32, i32*)\n");
+
         resllList.add("declare void @memset(i32*, i32, i32)\n");
     }
 

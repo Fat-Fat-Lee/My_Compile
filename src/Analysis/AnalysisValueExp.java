@@ -4,6 +4,7 @@ import Exp.Exp;
 import Lexer.Lexer;
 import Lexer.IdentWord;
 import Var.NumFunction;
+import Var.NumGroup;
 import Var.NumNormal;
 import Var.RealFunction;
 import Analysis.analysis;
@@ -140,8 +141,7 @@ public class AnalysisValueExp {
                         else {
                             if(!tmpIdent.ifConst)
                                 ifBian=true;
-                           // IdentWord.generLoadNormal(tmpLexer,resllList,tmpi);
-                            afterStack.push("Number("+tmpIdent.wordValue+")");
+
                         }
                     }
                     else
@@ -450,7 +450,7 @@ public class AnalysisValueExp {
                     }//params形如【“Number（10）”,"%5","%2"】
                     //在这里生成函数调用ll代码
                     //RealFunction.generFunctionll(resllList,tmpLexer,tmp,params);
-                    if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("int"))
+                    if(((NumFunction)tmpIdent.wordNumVar).returnType.equals("i32"))
                         llStack.push("%x"+(analysis.storeNum-1));//把函数结果放回栈中
                     else//要是函数结果为空，则看栈是否空，空则没问题
                     {
