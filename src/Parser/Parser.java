@@ -32,30 +32,30 @@ public class Parser {
     public String loopJmp2;
 
     public void mainParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-        for(int i=0;i<resLexerList.size();i++)
-        {
-            if(resLexerList.get(i).equals("Ident(getint)"))
-            {
-                resLexerList.add(i+4,"Ident(putint)");
-                resLexerList.add(i+5,"LPar");
-                resLexerList.add(i+6,"Ident(a)");
-                resLexerList.add(i+7,"LBracket");
-                resLexerList.add(i+8,"Ident(i)");
-                resLexerList.add(i+9,"RBracket");
-                resLexerList.add(i+10,"LBracket");
-                resLexerList.add(i+11,"Ident(j)");
-                resLexerList.add(i+12,"RBracket");
-                resLexerList.add(i+13,"RPar");
-                resLexerList.add(i+14,"Semicolon");
-
-                resLexerList.add(i+15,"Ident(putch)");
-                resLexerList.add(i+16,"LPar");
-                resLexerList.add(i+17,"47");
-                resLexerList.add(i+18,"RPar");
-                resLexerList.add(i+19,"Semicolon");
-                break;
-            }
-        }
+//        for(int i=0;i<resLexerList.size();i++)
+//        {
+//            if(resLexerList.get(i).equals("Ident(getint)"))
+//            {
+//                resLexerList.add(i+4,"Ident(putint)");
+//                resLexerList.add(i+5,"LPar");
+//                resLexerList.add(i+6,"Ident(a)");
+//                resLexerList.add(i+7,"LBracket");
+//                resLexerList.add(i+8,"Ident(i)");
+//                resLexerList.add(i+9,"RBracket");
+//                resLexerList.add(i+10,"LBracket");
+//                resLexerList.add(i+11,"Ident(j)");
+//                resLexerList.add(i+12,"RBracket");
+//                resLexerList.add(i+13,"RPar");
+//                resLexerList.add(i+14,"Semicolon");
+//
+//                resLexerList.add(i+15,"Ident(putch)");
+//                resLexerList.add(i+16,"LPar");
+//                resLexerList.add(i+17,"47");
+//                resLexerList.add(i+18,"RPar");
+//                resLexerList.add(i+19,"Semicolon");
+//                break;
+//            }
+//        }
 
 
         getSym(resLexerList);

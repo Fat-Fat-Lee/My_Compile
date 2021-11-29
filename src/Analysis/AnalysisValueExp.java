@@ -106,7 +106,12 @@ public class AnalysisValueExp {
                         &&!tmp.startsWith("LBracket")&&!tmp.startsWith("RBracket"))
                 {
                     //System.out.println("WHY!!!"+tmp);
-                    expAnalysisList.add(i , "Number(0)");
+                    expAnalysisList.add(i,"LPar");
+                    expAnalysisList.add(i+1,"Number(0)");
+                    if(i+4>=expAnalysisList.size())
+                        expAnalysisList.add(i+4,"RPar");
+                    else
+                        expAnalysisList.add(i+4,"RPar");
                     i++;
                 }
             }

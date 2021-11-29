@@ -1,22 +1,5 @@
-int relu_reg(int a) {
-   
-    return a;
-}
-
-int model(int a[][5]) {
-    if (+relu_reg(+a[0][0] )> 0)
-        return 1;
-    return 0;
-}
-
 int main() {
-  
-   int a[5][5];
-   
-        if (model(a)) {
-            // cat
-          
-        } 
-    
+    int a=+1* -106 + 4 * -125;
+   putint(a);
     return 0;
 }

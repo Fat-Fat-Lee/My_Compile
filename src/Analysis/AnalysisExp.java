@@ -82,10 +82,25 @@ public class AnalysisExp {
             //System.out.println(tmp0);
             if(tmp0.equals("Oppose"))
             {
-                expAnalysisList.add(i,"LPar");
-                expAnalysisList.add(i+2,"Ne");
-                expAnalysisList.add(i+3,"Number(0)");
-                expAnalysisList.add(i+4,"RPar");
+                if(i+2<expAnalysisList.size()&&expAnalysisList.get(i+2).equals("LBracket"))
+                {
+                    expAnalysisList.set(i,"LPar");
+                    int endIndex_=findRBracket(i+2,expAnalysisList);
+                    if(endIndex_+1<expAnalysisList.size()&&expAnalysisList.get(endIndex_+1).equals("LBracket"))
+                        endIndex_=findRBracket(endIndex_+1,expAnalysisList);
+                    expAnalysisList.add(endIndex_+1,"Eq");
+                    expAnalysisList.add(endIndex_+2,"Number(0)");
+                    expAnalysisList.add(endIndex_+3,"RPar");
+
+                }
+                else
+                {
+                    expAnalysisList.set(i,"LPar");
+                    expAnalysisList.add(i+2,"Eq");
+                    expAnalysisList.add(i+3,"Number(0)");
+                    expAnalysisList.add(i+4,"RPar");
+                }
+
                 i++;
             }
         }
@@ -107,13 +122,35 @@ public class AnalysisExp {
                         &&!tmp.startsWith("LBracket")&&!tmp.startsWith("RBracket"))
                 {
                     //System.out.println("WHY!!!"+tmp);
-                    expAnalysisList.add(i , "Number(0)");
+                    if(i+2<expAnalysisList.size()&&expAnalysisList.get(i+2).equals("LBracket"))
+                    {
+                        expAnalysisList.add(i,"LPar");
+                        expAnalysisList.add(i+1,"Number(0)");
+
+                        int endIndex_=findRBracket(i+4,expAnalysisList);
+                        if(endIndex_+1<expAnalysisList.size()&&expAnalysisList.get(endIndex_+1).equals("LBracket"))
+                            endIndex_=findRBracket(endIndex_+1,expAnalysisList);
+                        if(endIndex_+1>=expAnalysisList.size())
+                            expAnalysisList.add("RPar");
+                        else
+                            expAnalysisList.add(endIndex_+1,"RPar");
+                    }
+                    else
+                    {
+                        expAnalysisList.add(i,"LPar");
+                        expAnalysisList.add(i+1,"Number(0)");
+                        if(i+4>=expAnalysisList.size())
+                            expAnalysisList.add(i+4,"RPar");
+                        else
+                            expAnalysisList.add(i+4,"RPar");
+                    }
                     i++;
                 }
             }
         }
-//        for(String tmp:expAnalysisList)
-//            System.out.println(tmp);
+        System.out.println("------------------------------表达式来了！！！！-------------------------------");
+        for(String tmp:expAnalysisList)
+            System.out.println(tmp);
         return;
     }
     public void generAfterStack(Lexer tmpLexer, List<String> expAnalysisList,List<String> resllList)
