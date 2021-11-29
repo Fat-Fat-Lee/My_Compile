@@ -1,6 +1,6 @@
-[jobs.lab7]
+[jobs.lab8]
 
-image = { source = "dockerfile", path = ".", tag = "lab7-example" }
+image = { source = "dockerfile", path = ".", tag = "lab8-example" }
 
 run = [
   "java -classpath ./out Compiler $input  $ir",
