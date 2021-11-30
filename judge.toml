@@ -1,6 +1,6 @@
-[jobs.lab8]
+[jobs.short_circuit]
 
-image = { source = "dockerfile", path = ".", tag = "lab8-example" }
+image = { source = "dockerfile", path = ".", tag = "short_circuit-example" }
 
 run = [
   "java -classpath ./out Compiler $input  $ir",
