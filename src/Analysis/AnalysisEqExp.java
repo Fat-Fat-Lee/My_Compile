@@ -94,6 +94,16 @@ public class AnalysisEqExp {
                     expAnalysisList.add(endIndex_+3,"RPar");
 
                 }
+                else if(i+2<expAnalysisList.size()&&expAnalysisList.get(i+2).equals("LPar"))
+                {
+                    expAnalysisList.set(i,"LPar");
+                    int endIndex_=findRPar(i+2,expAnalysisList);
+
+                    expAnalysisList.add(endIndex_+1,"Eq");
+                    expAnalysisList.add(endIndex_+2,"Number(0)");
+                    expAnalysisList.add(endIndex_+3,"RPar");
+
+                }
                 else
                 {
                     expAnalysisList.set(i,"LPar");
@@ -656,6 +666,26 @@ public class AnalysisEqExp {
             if(expAnalysisList.get(i).equals("LBracket"))
                 bracketStack.push(expAnalysisList.get(i));
             if(expAnalysisList.get(i).equals("RBracket"))
+            {
+                if(!bracketStack.empty())
+                    bracketStack.pop();
+                if(bracketStack.empty())
+                    break;
+
+            }
+
+        }
+        return i;
+    }
+    public static int findRPar(int startIndex,List<String> expAnalysisList)
+    {
+        Stack<String>bracketStack=new Stack<>();
+        int i=0;
+        for(i=startIndex;i<expAnalysisList.size();i++)
+        {
+            if(expAnalysisList.get(i).equals("LPar"))
+                bracketStack.push(expAnalysisList.get(i));
+            if(expAnalysisList.get(i).equals("RPar"))
             {
                 if(!bracketStack.empty())
                     bracketStack.pop();

@@ -786,11 +786,15 @@ public class Parser {
            if(tmpSym.equals("LPar"))
            {
                getSym(resLexerList);
-               String cmp=condParser(tmpLexer,resLexerList,resllList);
+
+               String[] resCondList=new String[2];
+               String jmp1=analysis.generStoreLocate();
+               String jmp2=analysis.generStoreLocate();
+               resCondList=condParser(tmpLexer,resLexerList,resllList,jmp1,jmp2);
+               String cmp=resCondList[0];
+               jmp2=resCondList[1];
                if(tmpSym.equals("RPar"))
                {
-                   String jmp1=analysis.generStoreLocate();
-                   String jmp2=analysis.generStoreLocate();
                    resllList.add("br i1 "+cmp+", label "+jmp1+", label "+jmp2+"\n");
                    resllList.add(jmp1.substring(1)+":\n");
                    getSym(resLexerList);
@@ -875,11 +879,15 @@ public class Parser {
                loopJmp0=jmp0;
                resllList.add("br label "+jmp0+"\n");
                resllList.add(jmp0.substring(1)+":\n");
-               String cmp=condParser(tmpLexer,resLexerList,resllList);
+
+               String[] resCondList=new String[2];
+               String jmp1=analysis.generStoreLocate();
+               String jmp2=analysis.generStoreLocate();
+               resCondList=condParser(tmpLexer,resLexerList,resllList,jmp1,jmp2);
+               String cmp=resCondList[0];
+               jmp2=resCondList[1];
                if(tmpSym.equals("RPar"))
                {
-                   String jmp1=analysis.generStoreLocate();
-                   String jmp2=analysis.generStoreLocate();
                    loopJmp1=jmp1;
                    loopJmp2=jmp2;
                    resllList.add("br i1 "+cmp+", label "+jmp1+", label "+jmp2+"\n");
@@ -1181,44 +1189,74 @@ public class Parser {
         System.out.println("unaryOpParser");
     }
     //--------------------------------条件表达式相关-----------------------------------
-    public String condParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
+    public String[] condParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList,String jmp1,String jmp2){
         System.out.println("IN cond");
+        String[] resCondList=new String[2];
+        resCondList=lOrExpParser(tmpLexer,resLexerList,resllList,jmp1,jmp2);
+
+        System.out.println("condParser");
+        return resCondList;
+    }
+    public String[] lOrExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList,String jmp1,String jmp2){
+        System.out.println("IN lOr");
+        String condLocate=new String();
+        String jmp2_=analysis.generStoreLocate();
+
+        condLocate=lAndExpParser(tmpLexer,resLexerList,resllList,jmp1,jmp2_);
+        while(tmpSym.equals("Or"))
+        {
+            getSym(resLexerList);
+            resllList.add("br i1 "+condLocate+", label "+jmp1+", label "+jmp2_+"\n");
+            resllList.add(jmp2_.substring(1)+":\n");
+
+            jmp2_=analysis.generStoreLocate();
+            condLocate=lAndExpParser(tmpLexer,resLexerList,resllList,jmp1,jmp2_);
+        }
+        System.out.println("lOrParser");
+        String[] resCondList=new String[2];
+        resCondList[0]=condLocate;
+        resCondList[1]=jmp2_;
+        return resCondList;
+    }
+    public String lAndExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList,String jmp1,String jmp2){
+        System.out.println("IN lAnd");
+
 
         int startExp=resLexerIndex-1;
-        lOrExpParser(tmpLexer,resLexerList,resllList);
+        eqExpParser(tmpLexer,resLexerList,resllList);
         int endExp=resLexerIndex-2;
         List<String>expAnalysisList=new ArrayList<>();
+        System.out.println("------------------------------------");
         for(int i=startExp;i<=endExp;i++) {
             expAnalysisList.add(resLexerList.get(i));
             System.out.println(resLexerList.get(i));
         }
+        System.out.println("------------------------------------");
         String condLocate=new AnalysisEqExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
         //顺利把表达式字符串数组送去变为ll编码了
 
-        System.out.println("condParser");
-        return condLocate;
-    }
-    public void lOrExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-        System.out.println("IN lOr");
-
-        lAndExpParser(tmpLexer,resLexerList,resllList);
-        while(tmpSym.equals("Or"))
-        {
-            getSym(resLexerList);
-            lAndExpParser(tmpLexer,resLexerList,resllList);
-        }
-        System.out.println("lOrParser");
-    }
-    public void lAndExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
-        System.out.println("IN lAnd");
-
-        eqExpParser(tmpLexer,resLexerList,resllList);
         while(tmpSym.equals("And"))
         {
             getSym(resLexerList);
+            String jmp1_=analysis.generStoreLocate();
+            resllList.add("br i1 "+condLocate+", label "+jmp1_+", label "+jmp2+"\n");
+            resllList.add(jmp1_.substring(1)+":\n");
+
+            startExp=resLexerIndex-1;
             eqExpParser(tmpLexer,resLexerList,resllList);
+            endExp=resLexerIndex-2;
+            System.out.println("------------------------------------");
+            expAnalysisList=new ArrayList<>();
+            for(int i=startExp;i<=endExp;i++) {
+                expAnalysisList.add(resLexerList.get(i));
+                System.out.println(resLexerList.get(i));
+            }
+            System.out.println("------------------------------------");
+            condLocate=new AnalysisEqExp().mainAnalysisExp(tmpLexer,expAnalysisList,new analysis(),resllList);
+            //顺利把表达式字符串数组送去变为ll编码了
         }
         System.out.println("lAndParser");
+        return condLocate;
     }
     public void eqExpParser(Lexer tmpLexer,List<String> resLexerList,List<String> resllList){
         System.out.println("IN eq");
