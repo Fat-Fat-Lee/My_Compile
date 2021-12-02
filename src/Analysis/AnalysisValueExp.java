@@ -146,7 +146,8 @@ public class AnalysisValueExp {
                         else {
                             if(!tmpIdent.ifConst)
                                 ifBian=true;
-
+                            else
+                                afterStack.push("Number("+tmpIdent.wordValue+")");
                         }
                     }
                     else

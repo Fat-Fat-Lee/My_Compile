@@ -41,10 +41,9 @@ public class RealFunction {
 
                     if(((NumFunction) tmp.wordNumVar).FParamList.get(count).pType==0)
                         preParam="i32 ";
-                    else if(((NumFunction) tmp.wordNumVar).FParamList.get(count).pType==1)
-                        preParam="i32* ";
                     else
-                        preParam=" [ "+((NumFunction) tmp.wordNumVar).FParamList.get(count).pArrayLen+" x i32 ]* ";
+                        preParam="i32* ";
+
                     paramThing+=preParam+ k+",";
                     count++;
                 }

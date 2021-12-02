@@ -189,7 +189,7 @@ public class Parser {
                     getSym(resLexerList);
                     while(tmpSym.equals("LBracket"))
                     {
-                        tmpParam.pType=2;
+                        tmpParam.pType=1;
                         getSym(resLexerList);
 
                         //开始计算二维数组长度
@@ -209,7 +209,7 @@ public class Parser {
                             System.out.println("函数定义二维数组长度应为常量表达式");
                             System.exit(3);
                         }
-                        tmpParam.pArrayLen=Integer.parseInt(resString);
+                        tmpParam.intAllIndex.add(Integer.parseInt(resString));
 
                         if(tmpSym.equals("RBracket"))
                             getSym(resLexerList);
@@ -223,7 +223,8 @@ public class Parser {
         }
         else
             System.exit(2);
-
+        if(tmpParam.pType==1)
+            tmpParam.numDimen=tmpParam.intAllIndex.size();
         resllList.add(tmpParam.generFParam());//添加参数声明
 //        tmpParam.generParamIdenword(tmpLexer,resllList,Parser.blockStack.get(Parser.blockStack.size()-1));
         System.out.println("funcFParam");
@@ -308,7 +309,7 @@ public class Parser {
                     numBlock=Parser.blockStack.get(Parser.blockStack.size()-1);
                 IdentWord.generIdentGroup(tmpLexer,resllList,varSym,true,
                         numBlock
-                        ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                        ,tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
 
             }
             //普通变量声明
@@ -342,19 +343,18 @@ public class Parser {
                         expAnalysisList.add(resLexerList.get(i));
                         System.out.println(resLexerList.get(i));
                     }
-                    List<List<String>>resStringList=new ArrayList<>();
-                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,false,
-                            tmpNumGroup.numDimen, tmpNumGroup.numCol,tmpNumGroup.numRow,expAnalysisList);
+                    List<String>resStringList=new ArrayList<>();
+                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,false,expAnalysisList);
                     if(!global)
                     {
                         //进行赋值
                         IdentWord.generAssignConstGroup(tmpLexer,resllList,varSym,resStringList,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
                     else{
                         //进行赋值
                         IdentWord.generAssignConstGroupGlobal(tmpLexer,resllList,varSym,resStringList,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
                 }
                 else
@@ -464,17 +464,22 @@ public class Parser {
             boolean ifGroup=false;
             //新加入的数组模块
             int groupParamStart=resLexerIndex-1;
+            int groupParamEnd=0;
             while(tmpSym.equals("LBracket"))
             {
                 ifGroup = true;
                 getSym(resLexerList);
                 constExpParser(tmpLexer, resLexerList, resllList);
                 if (tmpSym.equals("RBracket"))
+                {
+                    groupParamEnd=resLexerIndex-1;
                     getSym(resLexerList);
+                }
+
                 else
                     System.exit(2);
             }
-            int groupParamEnd=resLexerIndex-1;
+
             NumGroup tmpNumGroup=new NumGroup();
             //开始数组变量声明
             if(ifGroup)
@@ -503,26 +508,25 @@ public class Parser {
                         expAnalysisList.add(resLexerList.get(i));
                         System.out.println(resLexerList.get(i));
                     }
-                    List<List<String>>resStringList=new ArrayList<>();
-                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,true,
-                            tmpNumGroup.numDimen, tmpNumGroup.numCol,tmpNumGroup.numRow,expAnalysisList);
+                    List<String>resStringList=new ArrayList<>();
+                    resStringList=NumGroup.resStringDivider(tmpLexer,resllList,true, expAnalysisList);
 
                     if(!global)
                     {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
                                 Parser.blockStack.get(Parser.blockStack.size()-1)
-                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                ,tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                             //进行赋值
                         IdentWord.generAssignGroup(tmpLexer,resllList,varSym,resStringList,
-                                    tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                    tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
                     else {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
                                 0
-                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                ,tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                             //进行赋值
                         IdentWord.generAssignGroupGlobal(tmpLexer,resllList,varSym,resStringList,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
 
 
@@ -534,16 +538,16 @@ public class Parser {
                     {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
                                 Parser.blockStack.get(Parser.blockStack.size()-1)
-                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                ,tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
                     else
                     {
                         IdentWord.generIdentGroup(tmpLexer,resllList,varSym,false,
                                 0
-                                ,tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                ,tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                         //进行赋值,全赋值为0
                         IdentWord.generZeroGroupGlobal(tmpLexer,resllList,varSym,
-                                tmpNumGroup.numDimen,tmpNumGroup.numRow,tmpNumGroup.numCol);
+                                tmpNumGroup.numDimen,tmpNumGroup.intAllIndex);
                     }
                 }
             }
@@ -979,7 +983,7 @@ public class Parser {
 
                else if(tmp.wordType.equals("numGroup"))
                {
-                   ptrString=IdentWord.groupPtrValue(tmp,resllList,tmpNumGroup.numDimen,tmpNumGroup.strRow,tmpNumGroup.strCol);
+                   ptrString=IdentWord.groupPtrValue(tmp,resllList,tmpNumGroup.numDimen,tmpNumGroup.strIndex);
                }
 
            }

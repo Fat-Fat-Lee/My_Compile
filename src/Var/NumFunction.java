@@ -77,12 +77,8 @@ public class NumFunction extends NumVar{
                 //完成多维数组声明语句
                 if(tmpFParam.pType==1)
                 {
-
-                    int numCol=-1;
-                    int numRow=-1;
                     ((NumGroup)tmp.wordNumVar).numDimen=1;
-                    ((NumGroup)tmp.wordNumVar).numCol=numCol;
-                    ((NumGroup)tmp.wordNumVar).numRow=numRow;
+                    ((NumGroup)tmp.wordNumVar).intAllIndex=tmpFParam.intAllIndex;
 
                     resllList.add(((NumGroup)tmp.wordNumVar).locate+" = alloca i32* \n");
                     System.out.println(((NumGroup)tmp.wordNumVar).locate+" = alloca i32* \n");
@@ -90,26 +86,7 @@ public class NumFunction extends NumVar{
                     System.out.println("store i32* "+tmpFParam.pLocate+", i32* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
 
                 }
-                else if(tmpFParam.pType==2)
-                {
-                    int numCol=tmpFParam.pArrayLen;
-                    int numRow=-1;
-                    ((NumGroup)tmp.wordNumVar).numDimen=2;
-                    ((NumGroup)tmp.wordNumVar).numCol=numCol;
-                    ((NumGroup)tmp.wordNumVar).numRow=numRow;
 
-                    resllList.add(((NumGroup)tmp.wordNumVar).locate+" = alloca [ "+tmpFParam.pArrayLen+" x i32 ]* \n");
-                    System.out.println(((NumGroup)tmp.wordNumVar).locate+" = alloca [ "+tmpFParam.pArrayLen+" x i32 ]* \n");
-                    resllList.add("store [ "+tmpFParam.pArrayLen+" x i32 ]* "+tmpFParam.pLocate+",[ "+
-                            tmpFParam.pArrayLen+" x i32 ]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
-                    System.out.println("store [ "+tmpFParam.pArrayLen+" x i32 ]* "+tmpFParam.pLocate+",[ "+
-                            tmpFParam.pArrayLen+" x i32 ]* * "+((NumGroup)tmp.wordNumVar).locate+"\n");
-                }
-                else
-                {
-                    System.out.println("暂时不支持更高维度数组");
-                    System.exit(3);
-                }
 
             }
         }
