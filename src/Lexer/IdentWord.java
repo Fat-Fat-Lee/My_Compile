@@ -146,7 +146,7 @@ public class IdentWord {
             System.exit(3);//该变量声明过，报错
         }
         tmp.wordValue=Integer.parseInt(resString);
-        resllList.add("store i32"+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//生成赋值语句
+        resllList.add("store i32 "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//生成赋值语句
 
         System.out.println("store i32 "+resString+","+"i32* "+((NumNormal)tmp.wordNumVar).locate+"\n");//打印一下
         return tmp;
